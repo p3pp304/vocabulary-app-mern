@@ -27,14 +27,14 @@ export const protect = (req,res,next) =>{  // protect è una dunzione intermedia
     }
 };
 
-export const getWords = async (req, res) =>{  // GET
-    try{
-        const words = await Word.find({userId: req.userId}).sort({parola:1})  //parole dell'utente specifico con ordine crescente A-Z
-        res.status(200).json(words);
-    }catch(error){
-        res.status(500).json({message: error.message})  // 500: Internal Server error --> errore generico dipendente dal server Express
-    }
-}
+export const getWords = async (req, res) => {
+  try {
+    const words = await Word.find({ userId: req.userId }).sort({ parola: 1 });
+    res.status(200).json(words);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 export const createWord = async (req, res) =>{  // CREATE
     try{
@@ -56,7 +56,7 @@ export const updateWord = async (req, res) => {
     const updated = await Word.findOneAndUpdate(
       { _id: id, userId: req.userId },  // filtro di ricerca
       req.body,  // contiene campi aggiornati
-      { new: true, runValidators: true }  // new --> restituisce il documento aggiornato; runValidators --> applica i vincoli dello schema anche durante l'aggiornamento
+      { returnDocument: 'after', runValidators: true }  // new --> restituisce il documento aggiornato; runValidators --> applica i vincoli dello schema anche durante l'aggiornamento
     );
 
     if (!updated) {

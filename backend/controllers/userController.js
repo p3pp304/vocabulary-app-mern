@@ -80,10 +80,10 @@ export const accedi = async (req, res) => {
     });
 
     // Restituisce l'utente senza la password
-    const userObj = newUser.toObject();
+    const userObj = user.toObject();
     delete userObj.password;
 
-    return res.status(201).json({
+    return res.status(200).json({
       user: userObj,
       message: "Accesso eseguito con successo!",
     });
