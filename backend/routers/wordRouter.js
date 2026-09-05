@@ -1,4 +1,4 @@
-import { deleteWord, updateWord, createWord, getWords, protect } from "../controllers/wordController";
+import { deleteWord, updateWord, createWord, getWords, protect } from "../controllers/wordController.js";
 import express from 'express'
 
 const router = express.Router();

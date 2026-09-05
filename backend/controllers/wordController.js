@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken'
-import Word from '../models/word'
+import Word from '../models/word.js'
 
 export const protect = (req,res,next) =>{  // protect è una dunzione intermedia (middleware).
     //Esegue controlli o trasformazioni (es. verificare un token JWT, parsare i cookie o i body JSON) 
@@ -29,10 +29,10 @@ export const protect = (req,res,next) =>{  // protect è una dunzione intermedia
 
 export const getWords = async (req, res) =>{  // GET
     try{
-        const words = (await Word.find({userId: req.userId})).sort({parola:1})  //parole dell'utente specifico con ordine crescente A-Z
+        const words = await Word.find({userId: req.userId}).sort({parola:1})  //parole dell'utente specifico con ordine crescente A-Z
         res.status(200).json(words);
     }catch(error){
-        res.status(500).json({message: error.message})  // 500: Internal Server error --> errore generico non dipendente dal server Express
+        res.status(500).json({message: error.message})  // 500: Internal Server error --> errore generico dipendente dal server Express
     }
 }
 
