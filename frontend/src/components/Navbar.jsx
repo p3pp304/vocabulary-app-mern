@@ -1,62 +1,61 @@
-import logo from '../assets/logo.png'; // Aggiusta il percorso in base alla tua cartella
+import logo from '../assets/logo.png';
+import { Link } from 'react-router-dom';
 
 export default function Navbar({ user, onLogout }) {
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur-md">
-      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+    <header className="sticky top-0 z-50 w-full bg-black/75 backdrop-blur-md">
+      {/* Header: h-14*/}
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-2">
         
         {/* Brand */}
-        <a href="/" className="flex items-center gap-3 group focus:outline-none">
-          <div className="relative flex items-center justify-center">
-            <div className="absolute -inset-1 rounded-lg bg-blue-500/20 blur opacity-0 group-hover:opacity-100 transition duration-300" />
-            <img 
-              src={logo} 
-              alt="Logo Vocably" 
-              className="relative h-9 w-9 object-contain transform group-hover:scale-105 transition duration-200" 
-            />
-          </div>
-          <span className="font-bold text-lg text-zinc-100 tracking-tight group-hover:text-white transition">
-            Vocably
-          </span>
-        </a>
+        <Link to='/' className="flex items-center">
+          <img
+            src={logo}
+            alt="Vocably Logo"
+            className="h-20 w-auto transition duration-200 hover:scale-105 hover:drop-shadow-[0_0_12px_rgba(6,182,212,0.35)]"
+          />
+        </Link>
 
         {/* Azioni Utente */}
-        <div className="flex items-center gap-3 text-sm">
+        <nav className="flex items-center gap-3.5 text-sm">
           {user ? (
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-zinc-900 border border-zinc-800">
-                <div className="w-6 h-6 rounded-full bg-blue-600/30 text-blue-400 flex items-center justify-center text-xs font-semibold uppercase">
-                  {user.name ? user.name.charAt(0) : 'U'}
-                </div>
-                <span className="text-zinc-300 text-xs font-medium pr-1">
+            <>
+              {/* Badge Utente */}
+              <div className="flex items-center gap-2 rounded-full py-1 pl-1 pr-3 border border-white/10 bg-white/5 transition cursor-pointer hover:bg-black/10 hover:border-amber-50">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-cyan-500/20 text-[10px] sm:text-xs font-semibold text-cyan-300">
+                  {user.name?.charAt(0).toUpperCase() || 'U'}
+                </span>
+                <span className="text-xs lg:text-sm font-medium text-zinc-300">
                   {user.name || 'Utente'}
                 </span>
               </div>
-              <button
-                type="button"
+
+              {/* Tasto Logout */}
+              <Link
+                to='/'
                 onClick={onLogout}
-                className="text-zinc-400 hover:text-red-400 hover:bg-red-950/30 px-3 py-1.5 rounded-lg border border-transparent hover:border-red-900/40 transition duration-150 text-xs font-medium"
+                className="rounded-lg px-2.5 py-1 text-xs lg:text-sm  text-zinc-300 border border-white/10 bg-white/5 transition cursor-pointer hover:bg-black/10 hover:border-amber-50"
               >
                 Esci
-              </button>
-            </div>
+              </Link>
+            </>
           ) : (
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                className="text-zinc-300 hover:text-white px-3 py-1.5 text-sm font-medium transition duration-150"
+            <>
+              <Link
+                to='/login'
+                className="rounded-lg px-3 py-1.5 text-sm font-medium  text-zinc-300 border border-white/10 bg-white/5 transition cursor-pointer hover:bg-black/10 hover:border-amber-50"
               >
                 Accedi
-              </button>
-              <button
-                type="button"
-                className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md shadow-blue-600/20 hover:shadow-blue-600/30 transition duration-150 active:scale-95"
+              </Link>
+              <Link
+                to='/register'
+                className="rounded-lg px-3 py-1.5 text-sm font-medium  text-zinc-300 border border-white/10 bg-white/5 transition cursor-pointer hover:bg-black/10 hover:border-amber-50"
               >
                 Registrati
-              </button>
-            </div>
+              </Link>
+            </>
           )}
-        </div>
+        </nav>
 
       </div>
     </header>
