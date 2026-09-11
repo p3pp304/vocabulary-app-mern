@@ -1,9 +1,13 @@
 import { useState } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import HeroSection from './components/HeroSection';
+import LoginView from './components/LoginView';
+import RegisterView from './components/RegisterView'; // Corretto il refuso 'RegistrerView'
+import Dashboard from './components/Dashboard';
 
-function App() {
-  // Stato utente mock per testare la Navbar (imposta a null per vedere lo stato 'disconnesso')
+export default function App() {
+  // Stato utente mock (null = disconnesso)
   const [user, setUser] = useState({ name: 'Giuseppe', email: 'test@example.com' });
 
   const handleLogout = () => {
@@ -11,12 +15,26 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar user={user} onLogout={handleLogout} />
-      <HeroSection></HeroSection>
-    </div>
-    
+    <BrowserRouter>
+      <div className="min-h-screen bg-[#070709] text-zinc-100 flex flex-col">
+        <Navbar user={user} onLogout={handleLogout} />
+        
+        <Routes>
+          {/* Rotta principale: Landing per ospiti, Dashboard per autenticati */}
+          <Route
+            path="/"
+            element={
+              <main className="flex-1 w-full">
+                {!user ? <HeroSection /> : <Dashboard user={user} />}
+              </main>
+            }
+          />
+
+          {/* Rotte di autenticazione */}
+          <Route path="/login" element={<LoginView />} />
+          <Route path="/register" element={<RegisterView />} />
+        </Routes>
+      </div>
+    </BrowserRouter>
   );
 }
-
-export default App;
