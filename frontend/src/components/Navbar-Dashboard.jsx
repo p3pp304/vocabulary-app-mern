@@ -1,71 +1,87 @@
-import React, { useState } from "react";
+import React from "react";
 
 export default function NavbarDashboard({
   selectedLang,
   setSelectedLang,
-  LANGUAGES,
+  LANGUAGES = [],
   activeTab,
   setActiveTab,
   deckCount = 0,
-  onAddWord, // Funzione che aggiorna wordsList in Dashboard
+  onOpenAddModal,
 }) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // Trova l'oggetto della lingua correntemente selezionata
+  const currentLangObj = LANGUAGES.find((l) => l.id === selectedLang);
 
   return (
-    <>
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-800/80 pb-6 w-full">
-        <div>
-          <span className="text-xs font-mono uppercase tracking-widest text-cyan-400">
-            Dashboard di Studio
-          </span>
+    <header className="flex flex-col gap-2 border-b border-zinc-800/80 pb-2 sm:pb-4 w-full">
+      {/* Titolo centrato */}
+      <div className="text-xs sm:text-base font-mono text-center uppercase tracking-widest text-cyan-400">
+        Dashboard di Studio
+      </div>
 
-          {/* Pulsanti per il cambio tab */}
-          <div className="flex items-center gap-4 mt-2">
-            <button
-              onClick={() => setActiveTab("explore")}
-              className={`text-sm md:text-base font-semibold pb-1.5 border-b-2 transition-all ${
-                activeTab === "explore"
-                  ? "border-cyan-400 text-white"
-                  : "border-transparent text-zinc-500 hover:text-zinc-300"
-              }`}
-            >
-              Esplora Catalogo
-            </button>
+      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between w-full sm:items-center">
+        {/* Tab di navigazione */}
+        <div className="flex items-center gap-3 sm:gap-10 mt-2">
+          <button
+            type="button"
+            onClick={() => setActiveTab("explore")}
+            className={`text-xs sm:text-base font-semibold pb-1.5 border-b-2 transition-all cursor-pointer ${
+              activeTab === "explore"
+                ? "border-cyan-400 text-white"
+                : "border-transparent text-zinc-500 hover:text-zinc-300"
+            }`}
+          >
+            Esplora Catalogo
+          </button>
 
+          <button
+            type="button"
+            onClick={() => setActiveTab("deck")}
+            className={`text-xs sm:text-base font-semibold pb-1.5 border-b-2 transition-all flex items-center gap-1 cursor-pointer ${
+              activeTab === "deck"
+                ? "border-cyan-400 text-white"
+                : "border-transparent text-zinc-500 hover:text-zinc-300"
+            }`}
+          >
+            <span>Il tuo Mazzo</span>
+            <span className="px-1 py-0.1 rounded-full text-xs sm:text-sm font-mono bg-zinc-800 text-cyan-400 border border-zinc-700">
+              {deckCount}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("flashcards")}
+            className={`text-xs sm:text-base font-semibold pb-1.5 border-b-2 transition-all cursor-pointer ${
+              activeTab === "flashcards"
+                ? "border-cyan-400 text-white"
+                : "border-transparent text-zinc-500 hover:text-zinc-300"
+            }`}
+          >
+            Flashcard
+          </button>
+        </div>
+        
+        <div className="flex items-center gap-2 sm:gap-5 justify-end">
             <button
-              onClick={() => setActiveTab("deck")}
-              className={`text-sm md:text-base font-semibold pb-1.5 border-b-2 transition-all flex items-center gap-2 ${
-                activeTab === "deck"
-                  ? "border-cyan-400 text-white"
-                  : "border-transparent text-zinc-500 hover:text-zinc-300"
-              }`}
+              type='button'
+              onClick={()=> onOpenAddModal()}
+              className=" bg-cyan-700 border  text-xs sm:text-sm border-zinc-700/80 hover:border-zinc-500 rounded-xl transition shadow-sm py-1.5 px-1.5 sm:py-2 sm:px-3 cursor-pointer"
             >
-              <span>Il tuo Mazzo</span>
-              <span className="px-2 py-0.5 rounded-full text-xs font-mono bg-zinc-800 text-cyan-400 border border-zinc-700">
-                {deckCount}
+              <span className="text-xs sm:text-base leading-none">
+                Aggiungi Parola  {" "}
+              </span>
+              <span className="">
+                +
               </span>
             </button>
-
-            <button
-              onClick={() => setActiveTab("flashcards")}
-              className={`text-sm md:text-base font-semibold pb-1.5 border-b-2 transition-all ${
-                activeTab === "flashcards"
-                  ? "border-cyan-400 text-white"
-                  : "border-transparent text-zinc-500 hover:text-zinc-300"
-              }`}
-            >
-              Flashcard
-            </button>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3">
-          {/* Selettore lingua */}
-          <div className="relative">
+          {/* Selettore lingua: solo bandierina su smartphone, bandiera + nome da sm */}
+          <div className="relative flex items-center bg-zinc-900 border border-zinc-700/80 hover:border-zinc-500 rounded-xl transition shadow-sm">
+            {/* Select invisibile sovrapposta: cattura tocco/click nativo */}
             <select
               value={selectedLang}
               onChange={(e) => setSelectedLang(e.target.value)}
-              className="appearance-none bg-zinc-900 border border-zinc-700/80 hover:border-zinc-500 text-zinc-200 text-sm font-medium py-2.5 pl-4 pr-10 rounded-xl focus:outline-none focus:border-cyan-400 cursor-pointer shadow-sm transition"
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
             >
               {LANGUAGES.map((lang) => (
                 <option key={lang.id} value={lang.id} className="bg-zinc-900 text-zinc-200">
@@ -73,30 +89,25 @@ export default function NavbarDashboard({
                 </option>
               ))}
             </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-zinc-400">
-              <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+
+            {/* Rendering visivo: bandierina sempre, testo con classe responsive hidden sm:inline */}
+            <div className="flex items-center py-1.5 px-1.5 sm:py-2 sm:px-3  sm:gap-2 text-xs sm:text-sm font-medium text-zinc-200 pointer-events-none">
+              <span className="text-xs sm:text-base leading-none">
+                {currentLangObj?.flag}
+              </span>
+              <span className="hidden sm:inline">
+                {currentLangObj?.label}
+              </span>
+              <svg
+                className="w-3.5 h-3.5 fill-current text-zinc-400 ml-0.5"
+                viewBox="0 0 20 20"
+              >
                 <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
               </svg>
             </div>
           </div>
-
-          {/* Pulsante apertura modale */}
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-semibold text-sm hover:brightness-110 transition shadow-lg shadow-cyan-500/20 active:scale-95 whitespace-nowrap"
-          >
-            <span>+ Aggiungi Parola</span>
-          </button>
         </div>
-      </header>
-
-      {/* Modale integrato direttamente nella Navbar */}
-      <AddWordModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onAddWord={onAddWord}
-        defaultLang={selectedLang}
-      />
-    </>
+      </div>
+    </header>
   );
 }

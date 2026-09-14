@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import NavbarDashboard from './Navbar-Dashboard'; // Parentesi graffe per export nominato
 import ExploreView from './ExploreView';
 import { LANGUAGES, INITIAL_WORDS } from '../vocabularyData';
+import AddWordModal from './AddWordModal';
 
 export default function Dashboard({ user }) {
   const [activeTab, setActiveTab] = useState('explore');
@@ -45,6 +46,7 @@ export default function Dashboard({ user }) {
         setActiveTab={setActiveTab}
         deckCount={savedCount}
         onAddWord={handleAddWord}
+        onOpenAddModal={()=> setIsModalOpen(true)}
         />
 
         {/* Vista Catalogo Esplora */}
@@ -70,8 +72,15 @@ export default function Dashboard({ user }) {
             Sezione Flashcard in arrivo.
           </div>
         )}
-
+        
       </div>
+      <AddWordModal
+            isOpen={isModalOpen}
+            onClose={()=> setIsModalOpen(false)}
+            onAddWord={handleAddWord}
+            selectedLang={selectedLang}
+        />
+
     </div>
   );
 }
