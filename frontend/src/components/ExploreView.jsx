@@ -32,18 +32,18 @@ export default function ExploreView({
   return (
     <div className="flex flex-col gap-8 w-full">
       {/* Filtri Funzionali: Livello & Nucleo Tematico */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-zinc-900/40 border border-zinc-800/80 p-5 rounded-2xl backdrop-blur-sm">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-zinc-900/40 border border-zinc-800/80 p-5 rounded-2xl backdrop-blur-sm">
         
         {/* Livelli CEFR */}
         <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between sm:justify-start sm:gap-25">
             <span className="text-xs font-mono uppercase tracking-wider text-zinc-400">
               Per Livello Linguistico
             </span>
             {selectedLevel.length > 0 && (
               <button
                 onClick={() => setSelectedLevel([])}
-                className="text-[10px] font-mono text-cyan-400 hover:underline"
+                className="text-[10px] font-mono text-cyan-400 hover:underline cursor-pointer"
               >
                 Azzera
               </button>
@@ -68,14 +68,14 @@ export default function ExploreView({
 
         {/* Nuclei Tematici */}
         <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between sm:justify-start sm:gap-86">
             <span className="text-xs font-mono uppercase tracking-wider text-zinc-400">
               Per Nucleo Tematico
             </span>
             {selectedTheme.length > 0 && (
               <button
                 onClick={() => setSelectedTheme([])}
-                className="text-[10px] font-mono text-cyan-400 hover:underline"
+                className="text-[10px] font-mono text-cyan-400 hover:underline cursor-pointer"
               >
                 Azzera
               </button>
