@@ -6,6 +6,7 @@ export default function ExploreView({
   wordsList,
   mySavedWords,
   toggleSaveWord,
+  searchQuery,
 }) {
   const [selectedLevel, setSelectedLevel] = useState([]);
   const [selectedTheme, setSelectedTheme] = useState([]);
@@ -26,7 +27,9 @@ export default function ExploreView({
     const matchLang = item.lang === selectedLang;
     const matchLevel = selectedLevel.length === 0 || selectedLevel.includes(item.level);
     const matchTheme = selectedTheme.length === 0 || selectedTheme.includes(item.theme);
-    return matchLang && matchLevel && matchTheme;
+    const matchQuery = !searchQuery || item.term.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.translation.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchLang && matchLevel && matchTheme && matchQuery;
   });
 
   return (
@@ -54,7 +57,7 @@ export default function ExploreView({
               <button
                 key={lvl}
                 onClick={() => toggleLevelFilter(lvl)}
-                className={`px-3 py-1 rounded-lg text-xs font-mono transition ${
+                className={`px-3 py-1 rounded-lg text-xs font-mono transition cursor-pointer ${
                   selectedLevel.includes(lvl)
                     ? 'bg-purple-500 text-white font-bold shadow-md shadow-purple-500/20'
                     : 'bg-zinc-950 border border-zinc-800 text-zinc-400 hover:text-zinc-200'
@@ -86,7 +89,7 @@ export default function ExploreView({
               <button
                 key={theme.id}
                 onClick={() => toggleThemeFilter(theme.id)}
-                className={`px-3 py-1 rounded-lg text-xs transition ${
+                className={`px-3 py-1 rounded-lg text-xs transition cursor-pointer ${
                   selectedTheme.includes(theme.id)
                     ? 'bg-zinc-200 text-black font-semibold'
                     : 'bg-zinc-950 border border-zinc-800 text-zinc-400 hover:text-zinc-200'
@@ -140,7 +143,7 @@ export default function ExploreView({
 
                   <button
                     onClick={() => toggleSaveWord(word.id)}
-                    className={`p-2.5 rounded-xl border text-xs font-semibold transition ${
+                    className={`p-2.5 rounded-xl border text-xs font-semibold transition cursor-pointer ${
                       isSaved
                         ? 'bg-emerald-950/40 border-emerald-600 text-emerald-400'
                         : 'bg-zinc-800/60 border-zinc-700 text-zinc-300 hover:bg-cyan-500 hover:text-black hover:border-cyan-400'

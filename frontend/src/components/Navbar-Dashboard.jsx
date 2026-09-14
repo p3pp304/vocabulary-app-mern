@@ -8,6 +8,8 @@ export default function NavbarDashboard({
   setActiveTab,
   deckCount = 0,
   onOpenAddModal,
+  searchQuery,
+  setSearchQuery
 }) {
   // Trova l'oggetto della lingua correntemente selezionata
   const currentLangObj = LANGUAGES.find((l) => l.id === selectedLang);
@@ -19,7 +21,7 @@ export default function NavbarDashboard({
         Dashboard di Studio
       </div>
 
-      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between w-full sm:items-center">
+      <div className="flex flex-col gap-3 sm:flex-row sm:justify-between w-full sm:items-center">
         {/* Tab di navigazione */}
         <div className="flex items-center gap-3 sm:gap-10 mt-2">
           <button
@@ -63,18 +65,49 @@ export default function NavbarDashboard({
         </div>
         
         <div className="flex items-center gap-2 sm:gap-5 justify-end">
-            <button
-              type='button'
-              onClick={()=> onOpenAddModal()}
-              className=" bg-cyan-700 border  text-xs sm:text-sm border-zinc-700/80 hover:border-zinc-500 rounded-xl transition shadow-sm py-1.5 px-1.5 sm:py-2 sm:px-3 cursor-pointer"
-            >
-              <span className="text-xs sm:text-base leading-none">
-                Aggiungi Parola  {" "}
-              </span>
-              <span className="">
-                +
-              </span>
-            </button>
+          {/* Barra di Ricerca */}
+          <div className="relative flex-1 sm:w-44 ">
+            <span className="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none text-zinc-500">
+              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </span>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Cerca termine..."
+              className="w-full bg-zinc-900 border border-zinc-800 hover:border-zinc-700 focus:border-cyan-400 rounded-xl py-1.5 pl-8 pr-2 text-xs sm:text-sm text-zinc-200 placeholder-zinc-500 focus:outline-none transition shadow-sm"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute inset-y-0 right-0 flex items-center pr-2 text-zinc-500 hover:text-zinc-300 text-xs cursor-pointer"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+          
+          {/*Bottone Aggiungi parola*/}
+          <button
+            type='button'
+            onClick={()=> onOpenAddModal()}
+            className=" bg-cyan-700 border  text-xs sm:text-sm border-zinc-700/80 hover:border-zinc-500 rounded-xl transition shadow-sm py-1.5 px-1.5 sm:py-2 sm:px-3 cursor-pointer"
+          >
+            <span className="text-xs sm:text-base leading-none">
+              Aggiungi Parola  {" "}
+            </span>
+            <span className="">
+              +
+            </span>
+          </button>
+
           {/* Selettore lingua: solo bandierina su smartphone, bandiera + nome da sm */}
           <div className="relative flex items-center bg-zinc-900 border border-zinc-700/80 hover:border-zinc-500 rounded-xl transition shadow-sm">
             {/* Select invisibile sovrapposta: cattura tocco/click nativo */}

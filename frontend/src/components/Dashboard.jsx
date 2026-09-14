@@ -3,6 +3,7 @@ import NavbarDashboard from './Navbar-Dashboard'; // Parentesi graffe per export
 import ExploreView from './ExploreView';
 import { LANGUAGES, INITIAL_WORDS } from '../vocabularyData';
 import AddWordModal from './AddWordModal';
+import MyDeck from './MyDeck';
 
 export default function Dashboard({ user }) {
   const [activeTab, setActiveTab] = useState('explore');
@@ -10,6 +11,7 @@ export default function Dashboard({ user }) {
   const [wordsList, setWordsList] = useState(INITIAL_WORDS);
   const [mySavedWords, setMySavedWords] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('')
 
   // Aggiungi / Rimuovi dal mazzo
   const toggleSaveWord = (id) => {
@@ -47,6 +49,8 @@ export default function Dashboard({ user }) {
         deckCount={savedCount}
         onAddWord={handleAddWord}
         onOpenAddModal={()=> setIsModalOpen(true)}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
         />
 
         {/* Vista Catalogo Esplora */}
@@ -56,14 +60,19 @@ export default function Dashboard({ user }) {
             wordsList={wordsList}
             mySavedWords={mySavedWords}
             toggleSaveWord={toggleSaveWord}
+            searchQuery={searchQuery}
           />
         )}
 
         {/* Vista Il Tuo Mazzo */}
         {activeTab === 'deck' && (
-          <div className="p-8 text-center bg-zinc-900/20 border border-dashed border-zinc-800 rounded-2xl text-zinc-400">
-            Sezione "Il Tuo Mazzo" ({savedCount} parole salvate per la lingua selezionata).
-          </div>
+          <MyDeck
+            selectedLang={selectedLang}
+            mySavedWords={mySavedWords}
+            toggleSaveWord={toggleSaveWord}
+            wordsList={wordsList}
+            searchQuery={searchQuery}
+          />
         )}
 
         {/* Vista Flashcard (placeholder per il prossimo step) */}
