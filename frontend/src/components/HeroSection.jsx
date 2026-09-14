@@ -1,5 +1,6 @@
 import hero from '../assets/hero.png'; // aggiusta il percorso relativo in base alla tua cartella
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 export default function HeroSection() {
   return (
@@ -35,12 +36,12 @@ export default function HeroSection() {
           </p>
 
           <div className="flex items-center justify-center lg:justify-start gap-4 pt-2">
-            <button
-              type="button"
-              className="w-full lg:w-auto bg-blue-600 hover:bg-blue-500 text-white font-semibold px-6 py-3 rounded-lg shadow-lg shadow-blue-600/25 transition duration-200"
+          <Link
+              to="/register"
+              className="w-full lg:w-auto text-center inline-flex items-center justify-center bg-blue-600 hover:bg-blue-500 text-white font-semibold px-6 py-3 rounded-lg shadow-lg shadow-blue-600/25 transition duration-200 cursor-pointer active:scale-95"
             >
               Registrati subito gratis
-            </button>
+            </Link>
           </div>
 
           {/* Social Proof / Statistiche rapide */}
