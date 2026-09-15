@@ -1,6 +1,7 @@
 import express from 'express';
 import userRouter from './routers/authRouter.js'
 import wordRouter from './routers/wordRouter.js'
+import deckRouter from './routers/deckRouter.js'
 import dotenv from 'dotenv'
 import mongoose from 'mongoose';
 import cookieParser from 'cookie-parser';
@@ -27,8 +28,10 @@ app.get('/home', (req, res)=>{   // /home = rotta (endpoint URL); .get = metodo 
     res.send('Sim trnat');
 })
 
-app.use('/api', userRouter); // use --> aggancia middleware, router  
-app.use('/api', wordRouter); 
+app.use('/api/auth', userRouter); // use --> aggancia middleware, router  
+app.use('/api/words', wordRouter); 
+app.use('/api/deck', deckRouter);
+
 
 app.listen(port, ()=>{
     console.log(`Il server è in ascolto sulla porta ${port}`)
