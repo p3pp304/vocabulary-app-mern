@@ -1,11 +1,9 @@
-import { deleteWord, updateWord, createWord, getWords, protect } from "../controllers/wordController.js";
+import {getWords} from "../controllers/wordController.js";
+import {verifyToken } from "../middlewares/authMiddleware.js";
 import express from 'express'
 
 const router = express.Router();
 
-router.get('/words', protect, getWords);
-router.post('/words', protect, createWord);
-router.put('/word/:id', protect, updateWord);
-router.delete('/word/:id', protect, deleteWord);
+router.get('/', verifyToken, getWords);
 
 export default router
