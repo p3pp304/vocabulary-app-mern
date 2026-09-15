@@ -5,7 +5,7 @@ import { LANGUAGES, INITIAL_WORDS } from '../vocabularyData';
 import AddWordModal from './AddWordModal';
 import MyDeck from './MyDeck';
 
-export default function Dashboard({ user }) {
+export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('explore');
   const [selectedLang, setSelectedLang] = useState('en');
   const [wordsList, setWordsList] = useState(INITIAL_WORDS);
