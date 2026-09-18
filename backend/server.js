@@ -3,6 +3,7 @@ import userRouter from './routers/authRouter.js'
 import wordRouter from './routers/wordRouter.js'
 import deckRouter from './routers/deckRouter.js'
 import dotenv from 'dotenv'
+import cors from 'cors'
 import mongoose from 'mongoose';
 import cookieParser from 'cookie-parser';
 
@@ -17,6 +18,12 @@ mongoose.connect(process.env.MONGO_URI)
     .catch((error)=> console.error('Errore di connessione a MongoDB:', error));  // , --> unisce argomenti separati
 
 // Middleware globali (fondamentali PRIMA delle rotte)
+app.use(
+    cors({
+        origin: "http://localhost:5173", // L'URL esatto del tuo frontend Vite
+        credentials: true, // Consente l'invio e la ricezione di cookie HTTP-only
+    })
+)
 app.use(express.json()); // trasforma il body in formato JSON
 app.use(cookieParser()); // elabora l'oggetto req.cookies 
 
