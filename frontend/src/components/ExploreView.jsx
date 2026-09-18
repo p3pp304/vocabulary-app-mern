@@ -1,36 +1,84 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CEFR_LEVELS, THEMES } from '../vocabularyData';
+import { fetchWords } from '../services/fetchWords';
 
 export default function ExploreView({
   selectedLang,
-  wordsList,
   mySavedWords,
   toggleSaveWord,
   searchQuery,
 }) {
+  // filtri ARRAY per selezione multipla filtri
   const [selectedLevel, setSelectedLevel] = useState([]);
   const [selectedTheme, setSelectedTheme] = useState([]);
+
+  // dati e paginazione da backend
+  const [words, setWords] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalWords, setTotalWords] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const toggleLevelFilter = (lvl) => {
     setSelectedLevel((prev) =>
       prev.includes(lvl) ? prev.filter((item) => item !== lvl) : [...prev, lvl]
     );
+    setPage(1);
   };
 
   const toggleThemeFilter = (themeId) => {
     setSelectedTheme((prev) =>
       prev.includes(themeId) ? prev.filter((item) => item !== themeId) : [...prev, themeId]
     );
+    setPage(1);
   };
 
-  const filteredWords = wordsList.filter((item) => {
-    const matchLang = item.lang === selectedLang;
-    const matchLevel = selectedLevel.length === 0 || selectedLevel.includes(item.level);
-    const matchTheme = selectedTheme.length === 0 || selectedTheme.includes(item.theme);
-    const matchQuery = !searchQuery || item.term.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.translation.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchLang && matchLevel && matchTheme && matchQuery;
-  });
+  // Reset pagina se cambia la lingua o la query di ricerca globale
+  useEffect(() => {
+    setPage(1);
+  }, [selectedLang, searchQuery]);
+
+  // Fetch asincrona dei dati con gestione abort
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const loadData = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const data = await fetchWords(
+          {
+            lingua: selectedLang,
+            page,
+            livello: selectedLevel.join(','), // Se multipli, invia es. "A1,B1"
+            tema: selectedTheme.join(','),
+            search: searchQuery,
+          },
+          controller.signal  // riferimento che aggancia operazione asincrona della fetch al controller attraverso il quale si può chiudere la connessione aperta
+        );
+
+        setWords(data.words || []);
+        setTotalPages(data.totalPages || 1);
+        setTotalWords(data.totalWords || 0);
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          setError(err.message || 'Errore nel caricamento dei vocaboli');
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadData();
+
+    return () => {
+      controller.abort();
+    };
+  }, [selectedLang, page, selectedLevel, selectedTheme, searchQuery]);
 
   return (
     <div className="flex flex-col gap-8 w-full">
@@ -45,7 +93,10 @@ export default function ExploreView({
             </span>
             {selectedLevel.length > 0 && (
               <button
-                onClick={() => setSelectedLevel([])}
+                onClick={() => {
+                  setSelectedLevel([])
+                  setPage(1);
+                }}
                 className="text-[10px] font-mono text-cyan-400 hover:underline cursor-pointer"
               >
                 Azzera
@@ -77,7 +128,10 @@ export default function ExploreView({
             </span>
             {selectedTheme.length > 0 && (
               <button
-                onClick={() => setSelectedTheme([])}
+                onClick={() => {
+                  setSelectedTheme([])
+                  setPage(1);
+                }}
                 className="text-[10px] font-mono text-cyan-400 hover:underline cursor-pointer"
               >
                 Azzera
@@ -106,55 +160,99 @@ export default function ExploreView({
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-zinc-100">
-            Vocaboli Consigliati ({filteredWords.length})
+            Vocaboli Consigliati ({totalWords})
           </h2>
           <span className="text-xs text-zinc-500 font-mono">
             Salvati nel tuo mazzo: {mySavedWords.length}
           </span>
         </div>
 
-        {filteredWords.length === 0 ? (
+        {/* Feedback di Errore */}
+        {error && (
+          <div className="p-4 bg-red-500/10 border border-red-500/30 text-red-400 rounded-2xl text-xs text-center">
+            {error}
+          </div>
+        )}
+
+
+        {/* Loading / Empty / Griglia */}
+        {loading ? (
+          <div className="p-12 text-center text-zinc-500 text-sm">
+            Caricamento vocaboli in corso...
+          </div>
+        ) : words.length === 0 ? (
           <div className="p-8 text-center bg-zinc-900/20 border border-dashed border-zinc-800 rounded-2xl text-zinc-500 text-sm">
             Nessun vocabolo trovato per i filtri selezionati.
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredWords.map((word) => {
-              const isSaved = mySavedWords.includes(word.id);
+            {words.map((word) => {
+              const wordId = word._id;
+              const isSaved = mySavedWords.includes(wordId);
+
               return (
                 <div
-                  key={word.id}
-                  className="p-4 bg-zinc-900/60 border border-zinc-800 hover:border-zinc-700 rounded-2xl flex items-center justify-between gap-3 transition group"
+                  key={wordId}
+                  className="p-4 bg-zinc-900/60 border border-zinc-800 hover:border-zinc-700 rounded-2xl flex items-center justify-between gap-3 transition group cursor-pointer"
                 >
                   <div className="flex flex-col">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-xs font-mono text-purple-400 bg-purple-950/40 border border-purple-800/40 px-1.5 py-0.5 rounded">
-                        {word.level}
+                        {word.livello}
                       </span>
-                      <span className="text-[11px] font-mono text-zinc-500 uppercase">
-                        {word.theme}
-                      </span>
+                      {(word.tema) && (
+                        <span className="text-[11px] font-mono text-zinc-500 uppercase">
+                          {word.tema}
+                        </span>
+                      )}
                     </div>
-                    <span className="text-base font-bold text-white group-hover:text-cyan-300 transition-colors">
-                      {word.term}
+                    <span className="text-base font-bold text-white group-hover:text-cyan-300 transition-colors capitalize">
+                      {word.parola}
                     </span>
-                    <span className="text-xs text-zinc-400">{word.translation}</span>
+                    <span className="text-xs text-zinc-400">
+                      {word.traduzione}
+                    </span>
                   </div>
 
                   <button
-                    onClick={() => toggleSaveWord(word.id)}
+                    onClick={() => toggleSaveWord(wordId)}
                     className={`p-2.5 rounded-xl border text-xs font-semibold transition cursor-pointer ${
                       isSaved
                         ? 'bg-emerald-950/40 border-emerald-600 text-emerald-400'
                         : 'bg-zinc-800/60 border-zinc-700 text-zinc-300 hover:bg-cyan-500 hover:text-black hover:border-cyan-400'
                     }`}
-                    title={isSaved ? 'Rimuovi dal mio vocabolario' : 'Aggiungi al mio vocabolario'}
+                    title={isSaved ? 'Rimuovi dal mio mazzo' : 'Aggiungi al mio mazzo'}
                   >
                     {isSaved ? '✓ Nel Mazzo' : '+ Aggiungi'}
                   </button>
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* Paginazione */}
+        {!loading && totalPages > 1 && (
+          <div className="flex items-center justify-between pt-4 border-t border-zinc-800/80">
+            <button
+              onClick={() => setPage((p) => Math.max(p - 1, 1))}
+              disabled={page <= 1}
+              className="px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-xs font-semibold text-zinc-300 disabled:opacity-40 hover:border-zinc-700 cursor-pointer"
+            >
+              Precedente
+            </button>
+
+            <span className="text-xs text-zinc-400 font-mono">
+              Pagina {page} di {totalPages}
+            </span>
+
+            <button
+              onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+              disabled={page >= totalPages}
+              className="px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-xs font-semibold text-zinc-300 disabled:opacity-40 hover:border-zinc-700 cursor-pointer"
+            >
+              Successiva
+            </button>
           </div>
         )}
       </div>

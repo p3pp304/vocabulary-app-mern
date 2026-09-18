@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import NavbarDashboard from './Navbar-Dashboard'; // Parentesi graffe per export nominato
 import ExploreView from './ExploreView';
-import { LANGUAGES, INITIAL_WORDS } from '../vocabularyData';
+import { LANGUAGES, INITIAL_WORDS} from '../vocabularyData';
+import  {addWordToDeck, removeWordFromDeck} from '../services/deckService'
 import AddWordModal from './AddWordModal';
 import MyDeck from './MyDeck';
 
@@ -14,11 +15,29 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('')
 
   // Aggiungi / Rimuovi dal mazzo
-  const toggleSaveWord = (id) => {
-    setMySavedWords((prev) =>
-      prev.includes(id) ? prev.filter((wordId) => wordId !== id) : [...prev, id]
-    );
-  };
+    const toggleSaveWord = async (id) => {
+      const isAlreadySaved = mySavedWords.includes(id);
+
+      // 1. Aggiornamento Ottimistico
+      setMySavedWords((prev) =>
+        isAlreadySaved ? prev.filter((wordId) => wordId !== id) : [...prev, id]
+      );
+
+      try {
+        if (isAlreadySaved) {
+          await removeWordFromDeck(id);
+        } else {
+          await addWordToDeck(id);
+        }
+      } catch (err) {
+        console.error(err);
+        // 2. Rollback: usa 'id' (wordId generava il ReferenceError)
+        setMySavedWords((prev) =>
+          isAlreadySaved ? [...prev, id] : prev.filter((wordId) => wordId !== id)
+        );
+        alert(err.message || 'Operazione fallita');
+      }
+    };
 
   // Creazione nuova parola dal modale
   const handleAddWord = (newWord) => {
