@@ -29,7 +29,9 @@ const wordSchema = new mongoose.Schema(
 );
 
 // 1. Evita duplicati: una parola può esistere una sola volta per lingua
-wordSchema.index({ parola: 1, lingua: 1 }, { unique: true });
+wordSchema.index({ lingua: 1, parola: 1 });
+wordSchema.index({ lingua: 1, livello: 1 });
+wordSchema.index({ lingua: 1, tema: 1 });
 
 // 2. Indice testuale completo (inclusa la traduzione) con pesi di rilevanza
 wordSchema.index(
