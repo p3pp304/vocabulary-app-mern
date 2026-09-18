@@ -4,7 +4,7 @@ import HeroSection from './components/HeroSection';
 import LoginView from './components/LoginView';
 import RegisterView from './components/RegisterView';
 import Dashboard from './components/Dashboard';
-import { useAuth } from './context/AuthContext';
+import { useAuth } from './store/AuthContext';
 
 export default function App() {
   const { user, fetchingUser } = useAuth();

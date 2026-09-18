@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 
 // Configurazione globale Axios per l'invio dei cookie
-axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000/api";
+axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000/api";
 axios.defaults.withCredentials = true; // Obbligatorio per scambiare i cookie httpOnly
 
 const AuthContext = createContext(null);
@@ -21,7 +21,7 @@ export function AuthProvider({ children }) {
   const fetchUser = async () => {
     setFetchingUser(true);
     try {
-      const response = await axios.get("/fetchUser");
+      const response = await axios.get("/auth/fetchUser");
       setUser(response.data.user);
     } catch {
       setUser(null);
@@ -40,7 +40,7 @@ export function AuthProvider({ children }) {
     setError(null);
 
     try {
-      const response = await axios.post("/registrati", { username, email, password });
+      const response = await axios.post("/auth/registrati", { username, email, password });
       setUser(response.data.user);
       setIsSignupOpen(false);
       return response.data;
@@ -59,7 +59,7 @@ export function AuthProvider({ children }) {
     setError(null);
 
     try {
-      const response = await axios.post("/accedi", { email, password });
+      const response = await axios.post("/auth/accedi", { email, password });
       setUser(response.data.user);
       setIsLoginOpen(false);
       return response.data;
@@ -78,7 +78,7 @@ export function AuthProvider({ children }) {
     setError(null);
 
     try {
-      await axios.get("/esci");
+      await axios.get("/auth/esci");
       setUser(null);
     } catch (err) {
       const errMsg = err.response?.data?.message || "Errore durante il logout.";
@@ -142,3 +142,5 @@ export const useAuth = () => {
   }
   return context;
 };
+
+export default AuthContext;
