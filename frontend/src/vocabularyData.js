@@ -3,7 +3,6 @@ export const LANGUAGES = [
   { id: 'es', label: 'Spagnolo', flag: '🇪🇸', voiceCode: 'es-ES' },
   { id: 'fr', label: 'Francese', flag: '🇫🇷', voiceCode: 'fr-FR' },
   { id: 'de', label: 'Tedesco', flag: '🇩🇪', voiceCode: 'de-DE' },
-  { id: 'it', label: 'Italiano', flag: '🇮🇹', voiceCode: 'it-IT' },
 ];
 
 export const CEFR_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
