@@ -1,7 +1,10 @@
 import logo from '../assets/logo.png';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../store/AuthContext';
 
-export default function Navbar({ user, onLogout }) {
+export default function Navbar() {
+
+  const {user, logout} =  useAuth()
   return (
     <header className="sticky top-0 z-50 w-full bg-black/75 backdrop-blur-md">
       {/* Header: h-14*/}
@@ -23,17 +26,17 @@ export default function Navbar({ user, onLogout }) {
               {/* Badge Utente */}
               <div className="flex items-center gap-2 rounded-full py-1 pl-1 pr-3 border border-white/10 bg-white/5 transition cursor-pointer hover:bg-black/10 hover:border-amber-50">
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-cyan-500/20 text-[10px] sm:text-xs font-semibold text-cyan-300">
-                  {user.name?.charAt(0).toUpperCase() || 'U'}
+                  {user.username?.charAt(0).toUpperCase() || 'U'}
                 </span>
                 <span className="text-xs lg:text-sm font-medium text-zinc-300">
-                  {user.name || 'Utente'}
+                  {user.username || 'Utente'}
                 </span>
               </div>
 
               {/* Tasto Logout */}
               <Link
                 to='/'
-                onClick={onLogout}
+                onClick={logout}
                 className="rounded-lg px-2.5 py-1 text-xs lg:text-sm  text-zinc-300 border border-white/10 bg-white/5 transition cursor-pointer hover:bg-black/10 hover:border-amber-50"
               >
                 Esci
