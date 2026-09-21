@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import NavbarDashboard from './Navbar-Dashboard'; // Parentesi graffe per export nominato
 import ExploreView from './ExploreView';
-import { LANGUAGES, INITIAL_WORDS} from '../vocabularyData';
+import { LANGUAGES} from '../vocabularyData';
 import  {addWordToDeck, removeWordFromDeck} from '../services/deckService'
 import AddWordModal from './AddWordModal';
 import MyDeck from './MyDeck';
@@ -9,11 +9,30 @@ import MyDeck from './MyDeck';
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('explore');
   const [selectedLang, setSelectedLang] = useState('en');
-  const [wordsList, setWordsList] = useState(INITIAL_WORDS);
   const [mySavedWords, setMySavedWords] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('')
 
+  // Recupera all'avvio le parole già salvate nel mazzo dell'utente
+  useEffect(() => {
+    const fetchUserDeck = async () => {
+      try {
+        const res = await fetch('http://localhost:3000/api/deck', {
+          credentials: 'include',
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        // Assume che l'endpoint restituisca una lista o un array di ID/oggetti
+        const ids = data.map((w) => String(w.wordId));
+        setMySavedWords(ids);
+      } catch (err) {
+        console.error('Impossibile recuperare il mazzo salvato:', err);
+      }
+    };
+
+    fetchUserDeck();
+  }, []);
+  
   // Aggiungi / Rimuovi dal mazzo
     const toggleSaveWord = async (id) => {
       const isAlreadySaved = mySavedWords.includes(id);
@@ -40,19 +59,27 @@ export default function Dashboard() {
     };
 
   // Creazione nuova parola dal modale
-  const handleAddWord = (newWord) => {
-    setWordsList((prev) => [newWord, ...prev]);
-    setMySavedWords((prev) => [...prev, newWord.id]);
+  const handleAddWord = (newItem) => {
+    // 1. Estrai l'id univoco (se parola custom, l'id identificativo è _id o deckItemId)
+    const targetId = newItem.wordId;
 
-    // Se la lingua inserita è diversa da quella attiva, sposta la vista
-    if (newWord.lang !== selectedLang) {
-      setSelectedLang(newWord.lang);
+    if (targetId) {
+      const idString = String(targetId);
+
+      // Aggiunge l'id evitando eventuali duplicati
+      setMySavedWords((prev) =>
+        prev.includes(idString) ? prev : [...prev, idString]
+      );
+    }
+
+    // 2. Controllo della lingua usando coerentemente 'newItem' e 'lingua'
+    const itemLang = newItem.lingua;
+    if (itemLang && itemLang !== selectedLang) {
+      setSelectedLang(itemLang);
     }
   };
-
-  const savedCount = wordsList.filter(
-    (w) => w.lang === selectedLang && mySavedWords.includes(w.id)
-  ).length;
+  
+  const savedCount = mySavedWords.length;
 
   return (
     <div className="p-6 lg:p-10 flex flex-col items-center">
@@ -76,7 +103,6 @@ export default function Dashboard() {
         {activeTab === 'explore' && (
           <ExploreView
             selectedLang={selectedLang}
-            wordsList={wordsList}
             mySavedWords={mySavedWords}
             toggleSaveWord={toggleSaveWord}
             searchQuery={searchQuery}
@@ -89,7 +115,6 @@ export default function Dashboard() {
             selectedLang={selectedLang}
             mySavedWords={mySavedWords}
             toggleSaveWord={toggleSaveWord}
-            wordsList={wordsList}
             searchQuery={searchQuery}
           />
         )}
