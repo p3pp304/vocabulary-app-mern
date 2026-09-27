@@ -5,6 +5,7 @@ import LoginView from './components/LoginView';
 import RegisterView from './components/RegisterView';
 import Dashboard from './components/Dashboard';
 import WordDetailView from './components/WordDetailView';
+import InstallPrompt from './components/InstallPrompt';
 import { useAuth } from './store/AuthContext';
 
 // Componente Wrapper per le Rotte Protette
@@ -30,6 +31,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-[#070709] text-zinc-100 flex flex-col">
+        <InstallPrompt />
         <Navbar />
 
         <main className="flex-1 w-full">
