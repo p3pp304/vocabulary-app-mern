@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect} from 'react';
 import { CEFR_LEVELS, THEMES } from '../vocabularyData';
 import { fetchWords } from '../services/fetchWords';
+import { useNavigate } from "react-router-dom";
 
 export default function ExploreView({
   selectedLang,
   mySavedWords,
   toggleSaveWord,
   searchQuery,
+  onSelectWord,
 }) {
   // filtri ARRAY per selezione multipla filtri
   const [selectedLevel, setSelectedLevel] = useState([]);
@@ -19,6 +21,7 @@ export default function ExploreView({
   const [totalWords, setTotalWords] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   const toggleLevelFilter = (lvl) => {
     setSelectedLevel((prev) =>
@@ -193,6 +196,7 @@ export default function ExploreView({
               return (
                 <div
                   key={wordId}
+                  onClick={() => onSelectWord(wordId)}
                   className="p-4 bg-zinc-900/60 border border-zinc-800 hover:border-zinc-700 rounded-2xl flex items-center justify-between gap-3 transition group cursor-pointer"
                 >
                   <div className="flex flex-col">
@@ -200,22 +204,20 @@ export default function ExploreView({
                       <span className="text-xs font-mono text-purple-400 bg-purple-950/40 border border-purple-800/40 px-1.5 py-0.5 rounded">
                         {word.livello}
                       </span>
-                      {(word.tema) && (
-                        <span className="text-[11px] font-mono text-zinc-500 uppercase">
-                          {word.tema}
-                        </span>
-                      )}
+                      <span className="text-[11px] font-mono text-zinc-500 uppercase">
+                        {word.tema}
+                      </span>
                     </div>
-                    <span className="text-base font-bold text-white group-hover:text-cyan-300 transition-colors capitalize">
+                    <span className="text-base font-bold text-white group-hover:text-cyan-300 transition-colors">
                       {word.parola}
                     </span>
-                    <span className="text-xs text-zinc-400">
-                      {word.traduzione}
-                    </span>
+                    <span className="text-xs text-zinc-400">{word.traduzione}</span>
                   </div>
 
                   <button
-                    onClick={() => toggleSaveWord(wordId)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleSaveWord(wordId)}}
                     className={`p-2.5 rounded-xl border text-xs font-semibold transition cursor-pointer ${
                       isSaved
                         ? 'bg-emerald-950/40 border-emerald-600 text-emerald-400'
