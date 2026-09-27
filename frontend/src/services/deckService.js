@@ -31,3 +31,20 @@ export const removeWordFromDeck = async (wordId) => {
 
   return res.json();
 };
+
+// Crea vocabolo custom privato (solo in DeckItem)
+export const createCustomDeckWord = async (wordData) => {
+  const res = await fetch(`${BASE_URL}/deck/custom`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(wordData),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || "Errore nella creazione della parola");
+  }
+
+  return res.json();
+};
