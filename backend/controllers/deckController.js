@@ -1,7 +1,7 @@
 import DeckItem from "../models/DeckItem.js";
 import Word from "../models/word.js";
 
-// 1. GET /api/deck - Recupera tutti i vocaboli nel mazzo dell'utente
+// 1. GET /api/deck - Recupera tutti i vocaboli nel mazzo dell'utente (globali + custom)
 export const getMyDeck = async (req, res) => {
   try {
     const { lingua, stato } = req.query;
@@ -9,39 +9,55 @@ export const getMyDeck = async (req, res) => {
     const query = { userId: req.userId };
     if (stato) query.stato = stato;
 
-    // Popola solo le parole che corrispondono alla lingua richiesta
+    // Popola wordId se presente (se è null, Mongoose lo lascia semplicemente a null)
     const deck = await DeckItem.find(query)
-      .populate({
-        path: "wordId",
-        match: lingua ? { lingua } : {},
-      })
+      .populate("wordId")
       .sort({ createdAt: -1 })
       .lean();
 
-    // Filtra eventuali wordId null (lingua diversa o parola rimossa) e mappa con fallback
     const userWords = deck
-      .filter((item) => item.wordId)
-      .map((item) => ({
-        deckItemId: item._id,
-        wordId: item.wordId._id,
-        parola: item.wordId.parola,
-        livello: item.wordId.livello,
-        tema: item.wordId.tema,
-        lingua: item.wordId.lingua,
-        tipo: item.wordId.tipo,
-        // Fallback: se l'utente ha personalizzato usa il suo valore, altrimenti quello globale
-        traduzione: item.customTraduzione || item.wordId.traduzione,
-        note: item.customNote || item.wordId.note,
-        esempi:
-          item.customEsempi?.length > 0 ? item.customEsempi : item.wordId.esempi,
-        espressione: item.wordId.espressione,
-        sinonimi: item.wordId.sinonimi,
-        contrari: item.wordId.contrari,
-        stato: item.stato,
-        ripetizioni: item.ripetizioni,
-        prossimoRipasso: item.prossimoRipasso,
-        aggiuntoIl: item.createdAt,
-      }));
+      .filter((item) => {
+        // Se non ha wordId né customParola, è un record non valido
+        if (!item.wordId && !item.customParola) return false;
+
+        // Determina la lingua del record (da wordId globale o da campo diretto custom)
+        const itemLingua = item.wordId ? item.wordId.lingua : item.lingua;
+
+        // Filtra per lingua solo se il parametro è stato passato nella query
+        return lingua ? itemLingua?.toLowerCase() === lingua.toLowerCase() : true;
+      })
+      .map((item) => {
+        const isCustom = !item.wordId;
+
+        return {
+          deckItemId: item._id,
+          // Se custom, l'id identificativo per il frontend è l'id stesso del deckItem
+          wordId: isCustom ? item._id : item.wordId._id,
+          isCustom,
+          parola: isCustom ? item.customParola : item.wordId.parola,
+          livello: isCustom ? item.livello : item.wordId.livello,
+          tema: isCustom ? item.tema : item.wordId.tema,
+          lingua: isCustom ? item.lingua : item.wordId.lingua,
+          tipo: item.wordId?.tipo || null,
+
+          // Traduzione: usa la custom se presente, altrimenti quella globale
+          traduzione: item.customTraduzione || item.wordId?.traduzione || "",
+          note: item.customNote || item.wordId?.note || "",
+          esempi:
+            item.customEsempi && item.customEsempi.length > 0
+              ? item.customEsempi
+              : item.wordId?.esempi || [],
+          espressione: item.wordId?.espressione || null,
+          sinonimi: item.wordId?.sinonimi || [],
+          contrari: item.wordId?.contrari || [],
+
+          // Parametri di studio
+          stato: item.stato,
+          ripetizioni: item.ripetizioni,
+          prossimoRipasso: item.prossimoRipasso,
+          aggiuntoIl: item.createdAt,
+        };
+      });
 
     return res.status(200).json(userWords);
   } catch (error) {
@@ -148,3 +164,98 @@ export const removeWordFromDeck = async (req, res) => {
     return res.status(500).json({ message: "Errore durante la rimozione dal mazzo." });
   }
 };
+
+
+export const createCustomDeckWord = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { parola, traduzione, lingua, livello, tema, note, esempi } = req.body;
+
+    if (!parola || !traduzione) {
+      return res.status(400).json({ message: "Termine e traduzione sono obbligatori." });
+    }
+
+    const cleanParola = parola.trim();
+    const cleanLingua = (lingua || "en").toLowerCase();
+
+    // 1. Verifica se la parola esiste già nel catalogo globale Word
+    const existingWord = await Word.findOne({
+      parola: { $regex: new RegExp(`^${cleanParola}$`, "i") },
+      lingua: cleanLingua,
+    });
+
+    let newDeckItem;
+
+    if (existingWord) {
+      // Caso A: Esiste nel catalogo predefinito -> collega wordId senza duplicare in Word
+      const alreadyInDeck = await DeckItem.findOne({
+        userId,
+        wordId: existingWord._id,
+      });
+
+      if (alreadyInDeck) {
+        return res.status(409).json({ message: "Questa parola è già presente nel tuo mazzo." });
+      }
+
+      newDeckItem = await DeckItem.create({
+        userId,
+        wordId: existingWord._id,
+        customTraduzione: traduzione.trim() !== existingWord.traduzione ? traduzione.trim() : null,
+        customNote: note ? note.trim() : null,
+        customEsempi: Array.isArray(esempi) ? esempi : [],
+        stato: "nuova",
+        ripetizioni: 0,
+        prossimoRipasso: new Date(),
+      });
+
+      return res.status(201).json({
+        message: "Vocabolo associato al mazzo dal catalogo.",
+        id: String(existingWord._id),
+        deckItemId: newDeckItem._id,
+        item: newDeckItem,
+      });
+    }
+
+    // Caso B: Non esiste nel catalogo -> crea SOLO in DeckItem (Word resta intatto)
+    const alreadyCustom = await DeckItem.findOne({
+      userId,
+      wordId: null,
+      customParola: { $regex: new RegExp(`^${cleanParola}$`, "i") },
+      lingua: cleanLingua,
+    });
+
+    if (alreadyCustom) {
+      return res.status(409).json({ message: "Questa parola personalizzata è già presente nel tuo mazzo." });
+    }
+
+    newDeckItem = await DeckItem.create({
+      userId,
+      wordId: null,
+      customParola: cleanParola,
+      customTraduzione: traduzione.trim(),
+      lingua: cleanLingua,
+      livello: livello || "B1",
+      tema: (tema || "tech").toLowerCase(),
+      customNote: note ? note.trim() : null,
+      customEsempi: Array.isArray(esempi) ? esempi : [],
+      stato: "nuova",
+      ripetizioni: 0,
+      prossimoRipasso: new Date(),
+    });
+
+    return res.status(201).json({
+      message: "Parola personalizzata creata solo nel tuo mazzo.",
+      id: String(newDeckItem._id),
+      deckItemId: newDeckItem._id,
+      item: newDeckItem,
+    });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(409).json({ message: "Questa parola è già presente nel tuo mazzo." });
+    }
+
+    console.error("Errore createCustomDeckWord:", error);
+    return res.status(500).json({ message: "Errore interno durante il salvataggio." });
+  }
+};
+
