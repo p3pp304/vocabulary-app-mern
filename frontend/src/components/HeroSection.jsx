@@ -70,7 +70,7 @@ export default function HeroSection() {
                 className="w-full max-w-2xl h-auto object-contain drop-shadow-md hover:scale-105 transition-transform duration-300"
               />
               <div className="mt-4 text-center">
-                <span className="text-xs uppercase tracking-widest text-amber-400/80 font-mono">Vocably Tree</span>
+                <span className="text-xs uppercase tracking-widest text-amber-400/80 font-mono">Vocaflow Tree</span>
                 <p className="text-sm text-zinc-400 mt-1">Coltiva la tua conoscenza ogni giorno</p>
               </div>
             </div>
