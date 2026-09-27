@@ -1,62 +1,65 @@
 import express from 'express';
-import userRouter from './routers/authRouter.js'
-import wordRouter from './routers/wordRouter.js'
-import deckRouter from './routers/deckRouter.js'
-import dotenv from 'dotenv'
-import cors from 'cors'
+import dotenv from 'dotenv';
+import cors from 'cors';
 import mongoose from 'mongoose';
 import cookieParser from 'cookie-parser';
-import cors from 'cors';
 
-const allowedOrigins = [
-  'http://localhost:5173', // ambiente di sviluppo
-  process.env.CLIENT_URL   // es. https://mia-app-vocaboli.vercel.app
-];
+import userRouter from './routers/authRouter.js';
+import wordRouter from './routers/wordRouter.js';
+import deckRouter from './routers/deckRouter.js';
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Non consentito da CORS'));
-    }
-  },
-  credentials: true
-}));
+// 1. Inizializza subito le variabili d'ambiente
+dotenv.config();
 
-dotenv.config(); // legge file di testo .env ed estrae le coppie chiave-valore inserendole in process.env
-
+// 2. Inizializza l'applicazione Express
 const app = express();
 const port = process.env.PORT || 3000;
 
-// CONNESSIONE a MongoDB
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('MongoDB connesso con successo'))
-    .catch((error)=> console.error('Errore di connessione a MongoDB:', error));  // , --> unisce argomenti separati
+// 3. Origini consentite da CORS
+const allowedOrigins = [
+  'http://localhost:5173', // frontend locale Vite
+  process.env.CLIENT_URL,  // URL del frontend su Vercel/Netlify
+].filter(Boolean); // rimuove valori null/undefined
 
-// Middleware globali (fondamentali PRIMA delle rotte)
+// 4. Middleware CORS (una sola volta, prima di ogni rotta)
 app.use(
-    cors({
-        origin: "http://localhost:5173", // L'URL esatto del tuo frontend Vite
-        credentials: true, // Consente l'invio e la ricezione di cookie HTTP-only
-    })
-)
-app.use(express.json()); // trasforma il body in formato JSON
-app.use(cookieParser()); // elabora l'oggetto req.cookies 
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Non consentito da CORS'));
+      }
+    },
+    credentials: true,
+  })
+);
 
-app.get('/', (req, res)=>{
-    res.send('Benvenuto')
-})
+// 5. Middleware di parsing
+app.use(express.json());
+app.use(cookieParser());
 
-app.get('/home', (req, res)=>{   // /home = rotta (endpoint URL); .get = metodo che serve ad ascoltare le richieste get del browser
-    res.send('Sim trnat');
-})
+// 6. Connessione a MongoDB
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log('MongoDB connesso con successo'))
+  .catch((error) => console.error('Errore di connessione a MongoDB:', error));
 
-app.use('/api/auth', userRouter); // use --> aggancia middleware, router  
-app.use('/api/words', wordRouter); 
+// 7. Endpoint base di test
+app.get('/', (req, res) => {
+  res.send('Benvenuto');
+});
+
+app.get('/home', (req, res) => {
+  res.send('Sim trnat');
+});
+
+// 8. Router API
+app.use('/api/auth', userRouter);
+app.use('/api/words', wordRouter);
 app.use('/api/deck', deckRouter);
 
-
-app.listen(port, ()=>{
-    console.log(`Il server è in ascolto sulla porta ${port}`)
-})
+// 9. Avvio server
+app.listen(port, () => {
+  console.log(`Il server è in ascolto sulla porta ${port}`);
+});

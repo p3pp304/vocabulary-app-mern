@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { CEFR_LEVELS, THEMES } from "../vocabularyData";
 
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+
 export default function MyDeck({
   selectedLang,
   toggleSaveWord,
@@ -32,7 +34,7 @@ export default function MyDeck({
 
       try {
         const res = await fetch(
-          `http://localhost:3000/api/deck?lingua=${selectedLang}`,
+          `${API_BASE_URL}/api/deck?lingua=${selectedLang}`,
           {
             credentials: "include",
             signal: controller.signal,

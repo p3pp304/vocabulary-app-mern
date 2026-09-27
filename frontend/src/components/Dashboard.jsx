@@ -7,6 +7,8 @@ import AddWordModal from "./AddWordModal";
 import { LANGUAGES } from "../vocabularyData";
 import { addWordToDeck, removeWordFromDeck, createCustomDeckWord } from "../services/deckService";
 
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+
 export default function Dashboard({ currentTab = "explore" }) {
   const [selectedLang, setSelectedLang] = useState("en");
   const [mySavedWords, setMySavedWords] = useState([]);
@@ -17,7 +19,7 @@ export default function Dashboard({ currentTab = "explore" }) {
   useEffect(() => {
     const fetchUserDeck = async () => {
       try {
-        const res = await fetch("http://localhost:3000/api/deck", {
+        const res = await fetch(`${API_BASE_URL}/api/deck`, {
           credentials: "include",
         });
         if (!res.ok) return;
