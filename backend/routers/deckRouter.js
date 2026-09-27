@@ -4,6 +4,7 @@ import {
   addWordToDeck,
   updateDeckWord,
   removeWordFromDeck,
+  createCustomDeckWord,
 } from "../controllers/deckController.js";
 import { verifyToken } from "../middlewares/authMiddleware.js";
 
@@ -16,5 +17,6 @@ router.get("/", getMyDeck);
 router.post("/", addWordToDeck);
 router.put("/:id", updateDeckWord);
 router.delete("/:id", removeWordFromDeck);
+router.post('/custom', verifyToken, createCustomDeckWord);
 
 export default router;
