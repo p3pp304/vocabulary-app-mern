@@ -6,6 +6,23 @@ import dotenv from 'dotenv'
 import cors from 'cors'
 import mongoose from 'mongoose';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
+
+const allowedOrigins = [
+  'http://localhost:5173', // ambiente di sviluppo
+  process.env.CLIENT_URL   // es. https://mia-app-vocaboli.vercel.app
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Non consentito da CORS'));
+    }
+  },
+  credentials: true
+}));
 
 dotenv.config(); // legge file di testo .env ed estrae le coppie chiave-valore inserendole in process.env
 
