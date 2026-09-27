@@ -2,6 +2,18 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/user.js';
 
+const authCookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  path: '/',
+};
+
+const setAuthCookie = (res, token) => {
+  res.clearCookie('token', { ...authCookieOptions, path: '/api/auth' });
+  res.cookie('token', token, authCookieOptions);
+};
+
 export const registrati = async (req, res) => {
   try {
     const { username, email, password } = req.body;
@@ -33,11 +45,7 @@ export const registrati = async (req, res) => {
     expiresIn: "7d",
     });
 
-    res.cookie("token", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    });
+    setAuthCookie(res, token);
 
     // Restituisce l'utente senza la password
     const userObj = newUser.toObject();
@@ -73,11 +81,7 @@ export const accedi = async (req, res) => {
     expiresIn: "7d",
     });
 
-    res.cookie("token", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    });
+    setAuthCookie(res, token);
 
     // Restituisce l'utente senza la password
     const userObj = user.toObject();
@@ -123,7 +127,8 @@ export const fetchUser = async (req, res) => {
 
 // Logout: cancella il cookie di sessione
 export const logout = async (req, res) => {
-  res.clearCookie("token");
+  res.clearCookie('token', authCookieOptions);
+  res.clearCookie('token', { ...authCookieOptions, path: '/api/auth' });
   res.status(200).json({ message: "Logout avvenuto correttamente." });
 };
 

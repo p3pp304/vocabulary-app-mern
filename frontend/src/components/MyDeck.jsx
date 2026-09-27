@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { CEFR_LEVELS, THEMES } from "../vocabularyData";
-
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+import { API_BASE_URL } from "../services/apiConfig";
 
 export default function MyDeck({
   selectedLang,

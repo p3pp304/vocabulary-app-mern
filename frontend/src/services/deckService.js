@@ -1,7 +1,7 @@
-const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+import { API_BASE_URL } from './apiConfig';
 
 export const addWordToDeck = async (wordId) => {
-  const res = await fetch(`${BASE_URL}/api/deck/`, {
+  const res = await fetch(`${API_BASE_URL}/api/deck/`, {
     method: 'POST',
     credentials: 'include', // Invia il cookie con il token JWT
     headers: {
@@ -19,7 +19,7 @@ export const addWordToDeck = async (wordId) => {
 };
 
 export const removeWordFromDeck = async (wordId) => {
-  const res = await fetch(`${BASE_URL}/api/deck/${wordId}`, {
+  const res = await fetch(`${API_BASE_URL}/api/deck/${wordId}`, {
     method: 'DELETE',
     credentials: 'include',
   });
@@ -34,7 +34,7 @@ export const removeWordFromDeck = async (wordId) => {
 
 // Crea vocabolo custom privato (solo in DeckItem)
 export const createCustomDeckWord = async (wordData) => {
-  const res = await fetch(`${BASE_URL}/api/deck/custom`, {
+  const res = await fetch(`${API_BASE_URL}/api/deck/custom`, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },

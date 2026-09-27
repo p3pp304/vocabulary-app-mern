@@ -1,8 +1,8 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
+import { API_BASE_URL } from "../services/apiConfig";
 
 // Configurazione globale Axios per l'invio dei cookie
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 axios.defaults.baseURL = `${API_BASE_URL}/api`;
 axios.defaults.withCredentials = true; // Obbligatorio per scambiare i cookie httpOnly
 

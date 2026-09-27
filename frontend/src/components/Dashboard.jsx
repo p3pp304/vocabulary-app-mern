@@ -6,8 +6,7 @@ import MyDeck from "./MyDeck";
 import AddWordModal from "./AddWordModal";
 import { LANGUAGES } from "../vocabularyData";
 import { addWordToDeck, removeWordFromDeck, createCustomDeckWord } from "../services/deckService";
-
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+import { API_BASE_URL } from "../services/apiConfig";
 
 export default function Dashboard({ currentTab = "explore" }) {
   const [selectedLang, setSelectedLang] = useState("en");

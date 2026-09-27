@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+import { API_BASE_URL } from './apiConfig';
 
 export const fetchWords = async ({ lingua = 'en', page = 1, livello = '', tema='', search = '' } = {}) => {
   const params = new URLSearchParams({

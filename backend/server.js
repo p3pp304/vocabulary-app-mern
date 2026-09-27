@@ -18,6 +18,7 @@ const port = process.env.PORT || 3000;
 // 3. Origini consentite da CORS
 const allowedOrigins = [
   'http://localhost:5173', // frontend locale Vite
+  'https://vocaflow-two.vercel.app', // frontend pubblico PWA su Vercel
   process.env.CLIENT_URL,  // URL del frontend su Vercel/Netlify
 ].filter(Boolean); // rimuove valori null/undefined
 
