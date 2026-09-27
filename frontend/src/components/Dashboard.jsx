@@ -1,23 +1,19 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import NavbarDashboard from "./Navbar-Dashboard";
 import ExploreView from "./ExploreView";
 import MyDeck from "./MyDeck";
-import WordDetailView from "./WordDetailView";
 import AddWordModal from "./AddWordModal";
 import { LANGUAGES } from "../vocabularyData";
 import { addWordToDeck, removeWordFromDeck, createCustomDeckWord } from "../services/deckService";
 
-export default function Dashboard({ defaultTab = "explore" }) {
-  const [activeTab, setActiveTab] = useState(defaultTab);
+export default function Dashboard({ currentTab = "explore" }) {
   const [selectedLang, setSelectedLang] = useState("en");
   const [mySavedWords, setMySavedWords] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  
-  // ID della parola aperta nel dettaglio (null se siamo nelle liste)
-  const [selectedWordId, setSelectedWordId] = useState(null);
+  const navigate = useNavigate();
 
-  // Caricamento mazzo per sapere quali parole sono salvate
   useEffect(() => {
     const fetchUserDeck = async () => {
       try {
@@ -26,7 +22,7 @@ export default function Dashboard({ defaultTab = "explore" }) {
         });
         if (!res.ok) return;
         const data = await res.json();
-        
+
         const ids = data
           .map((w) => {
             const rawId = w.wordId || w.deckItemId || w._id;
@@ -43,15 +39,23 @@ export default function Dashboard({ defaultTab = "explore" }) {
     fetchUserDeck();
   }, []);
 
-  // Quando l'utente clicca su una scheda nella navbar (Esplora / Mazzo)
+  // Cambio scheda sincronizzato con gli URL reali
   const handleTabChange = (newTab) => {
-    setSelectedWordId(null); // Chiude il dettaglio parola
-    setActiveTab(newTab);
+    if (newTab === "explore") {
+      navigate("/dashboard");
+    } else if (newTab === "deck") {
+      navigate("/deck");
+    }
   };
 
   const handleLangChange = (newLang) => {
-    setSelectedWordId(null);
     setSelectedLang(newLang);
+  };
+
+  const handleSelectWord = (id) => {
+    if (id && id !== "undefined") {
+      navigate(`/words/${id}`);
+    }
   };
 
   const toggleSaveWord = async (id) => {
@@ -78,28 +82,34 @@ export default function Dashboard({ defaultTab = "explore" }) {
   };
 
   const handleAddWord = async (newWordData) => {
-    const data = await createCustomDeckWord(newWordData);
-    const newId = String(data.id || data.deckItemId || data.item?._id);
+    try {
+      const data = await createCustomDeckWord(newWordData);
+      const rawId = data.id || data.deckItemId || data.item?._id;
 
-    if (newId) {
-      setMySavedWords((prev) => (prev.includes(newId) ? prev : [...prev, newId]));
-    }
+      if (rawId) {
+        const newId = String(rawId);
+        setMySavedWords((prev) => (prev.includes(newId) ? prev : [...prev, newId]));
+      }
 
-    if (newWordData.lingua && newWordData.lingua !== selectedLang) {
-      setSelectedLang(newWordData.lingua);
+      if (newWordData.lingua && newWordData.lingua !== selectedLang) {
+        setSelectedLang(newWordData.lingua);
+      }
+
+      setIsModalOpen(false);
+    } catch (err) {
+      console.error("Errore aggiunta vocabolo:", err);
+      alert(err.message || "Errore durante la creazione del vocabolo");
     }
   };
 
   return (
     <div className="p-6 lg:p-10 flex flex-col items-center w-full">
       <div className="w-full max-w-6xl flex flex-col gap-8">
-        
-        {/* 1. QUESTA BARRA RESTA SEMPRE QUI, NON SCOMPARE MAI */}
         <NavbarDashboard
           selectedLang={selectedLang}
           setSelectedLang={handleLangChange}
           LANGUAGES={LANGUAGES}
-          activeTab={selectedWordId ? null : activeTab}
+          activeTab={currentTab}
           setActiveTab={handleTabChange}
           deckCount={mySavedWords.length}
           onAddWord={handleAddWord}
@@ -108,46 +118,30 @@ export default function Dashboard({ defaultTab = "explore" }) {
           setSearchQuery={setSearchQuery}
         />
 
-        {/* 2. AREA CONTENUTO: mostra WordDetailView O le viste a elenco */}
-        {selectedWordId ? (
-          <WordDetailView
-            wordId={selectedWordId}
-            onBack={() => setSelectedWordId(null)}
-            onGoToDeck={() => {
-              setSelectedWordId(null);
-              setActiveTab("deck");
-            }}
+        {currentTab === "explore" && (
+          <ExploreView
+            selectedLang={selectedLang}
+            mySavedWords={mySavedWords}
             toggleSaveWord={toggleSaveWord}
-            isSaved={mySavedWords.includes(String(selectedWordId))}
+            searchQuery={searchQuery}
+            onSelectWord={handleSelectWord}
           />
-        ) : (
-          <>
-            {activeTab === "explore" && (
-              <ExploreView
-                selectedLang={selectedLang}
-                mySavedWords={mySavedWords}
-                toggleSaveWord={toggleSaveWord}
-                searchQuery={searchQuery}
-                onSelectWord={(id) => setSelectedWordId(id)}
-              />
-            )}
+        )}
 
-            {activeTab === "deck" && (
-              <MyDeck
-                selectedLang={selectedLang}
-                mySavedWords={mySavedWords}
-                toggleSaveWord={toggleSaveWord}
-                searchQuery={searchQuery}
-                onSelectWord={(id) => setSelectedWordId(id)}
-              />
-            )}
+        {currentTab === "deck" && (
+          <MyDeck
+            selectedLang={selectedLang}
+            mySavedWords={mySavedWords}
+            toggleSaveWord={toggleSaveWord}
+            searchQuery={searchQuery}
+            onSelectWord={handleSelectWord}
+          />
+        )}
 
-            {activeTab === "flashcards" && (
-              <div className="p-8 text-center bg-zinc-900/20 border border-dashed border-zinc-800 rounded-2xl text-zinc-400">
-                Sezione Flashcard in arrivo.
-              </div>
-            )}
-          </>
+        {currentTab === "flashcards" && (
+          <div className="p-8 text-center bg-zinc-900/20 border border-dashed border-zinc-800 rounded-2xl text-zinc-400">
+            Sezione Flashcard in arrivo.
+          </div>
         )}
       </div>
 

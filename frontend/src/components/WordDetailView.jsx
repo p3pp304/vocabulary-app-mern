@@ -13,13 +13,19 @@ export default function WordDetailView() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    if (!id || id === "undefined") {
+      setError("ID del vocabolo non valido.");
+      setLoading(false);
+      return;
+    }
+
     const loadData = async () => {
       setLoading(true);
       setError(null);
       try {
         const data = await fetchWordDetail(id);
         setWord(data);
-        setIsInDeck(data.isInDeck);
+        setIsInDeck(Boolean(data.isInDeck));
       } catch (err) {
         setError(err.message || "Impossibile recuperare il termine.");
       } finally {
@@ -31,6 +37,7 @@ export default function WordDetailView() {
   }, [id]);
 
   const handleToggleDeck = async () => {
+    if (!id) return;
     try {
       if (isInDeck) {
         await removeWordFromDeck(id);
@@ -59,6 +66,7 @@ export default function WordDetailView() {
           {error || "Vocabolo non trovato."}
         </div>
         <button
+          type="button"
           onClick={() => navigate(-1)}
           className="text-xs font-mono text-cyan-400 hover:underline cursor-pointer"
         >
@@ -70,18 +78,26 @@ export default function WordDetailView() {
 
   return (
     <div className="w-full max-w-4xl mx-auto p-6 lg:p-10 flex flex-col gap-6 text-zinc-100">
-      {/* Top Bar con link diretti a Dashboard e Mazzo */}
+      {/* Top Bar */}
       <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
         <div className="flex items-center gap-4">
           <button
-            onClick={() => navigate(-1)}
+            type="button"
+            onClick={(e) => {
+                e.stopPropagation;
+                navigate(-1)
+            }}
             className="text-xs font-mono text-zinc-400 hover:text-white transition cursor-pointer"
           >
             ← Indietro
           </button>
           <span className="text-zinc-600">|</span>
           <button
-            onClick={() => navigate("/deck")}
+            type="button"
+            onClick={(e) => {
+                e.stopPropagation;
+                navigate("/deck")
+            }}
             className="text-xs font-mono text-cyan-400 hover:underline cursor-pointer"
           >
             Vai al Mazzo
@@ -95,6 +111,7 @@ export default function WordDetailView() {
             </span>
           )}
           <button
+            type="button"
             onClick={handleToggleDeck}
             className={`px-4 py-2 rounded-xl text-xs font-semibold transition cursor-pointer border ${
               isInDeck
@@ -124,7 +141,7 @@ export default function WordDetailView() {
           <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight capitalize">
             {word.parola}
           </h1>
-          <p className="text-xl sm:text-2xl text-cyan-400 font-medium mt-2">
+          <p className="text-xl sm:text-2xl text-cyan-400 font-medium mt-2 capitalize">
             {word.traduzione}
           </p>
         </div>

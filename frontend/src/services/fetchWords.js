@@ -1,3 +1,5 @@
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
 export const fetchWords = async ({ lingua = 'en', page = 1, livello = '', tema='', search = '' } = {}) => {
   const params = new URLSearchParams({
     lingua,
@@ -8,7 +10,7 @@ export const fetchWords = async ({ lingua = 'en', page = 1, livello = '', tema='
   if (tema) params.append('tema', tema);
   if (search.trim()) params.append('search', search.trim());
 
-  const res = await fetch(`http://localhost:3000/api/words?${params.toString()}`, {
+  const res = await fetch(`${API_BASE_URL}/api/words?${params.toString()}`, {
     credentials: 'include',
   });
 

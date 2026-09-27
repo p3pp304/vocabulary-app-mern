@@ -55,7 +55,7 @@ export default function App() {
               path="/dashboard"
               element={
                 <ProtectedRoute>
-                  <Dashboard defaultTab="explore" />
+                  <Dashboard currentTab="explore" />
                 </ProtectedRoute>
               }
             />
@@ -63,7 +63,7 @@ export default function App() {
               path="/deck"
               element={
                 <ProtectedRoute>
-                  <Dashboard defaultTab="deck" />
+                  <Dashboard currentTab="deck" />
                 </ProtectedRoute>
               }
             />
@@ -71,7 +71,7 @@ export default function App() {
               path="/flashcards"
               element={
                 <ProtectedRoute>
-                  <Dashboard defaultTab="flashcards" />
+                  <Dashboard currentTab="flashcards" />
                 </ProtectedRoute>
               }
             />
