@@ -7,7 +7,7 @@ export const getWords = async (req, res) => {
     const { lingua = 'en', page = 1, livello, tema, search } = req.query;
 
     const pageNum = Math.max(1, Number(page) || 1);
-    const limit = 20;
+    const limit = 18;
     const skip = (pageNum - 1) * limit;
 
     const query = { lingua };
