@@ -11,6 +11,15 @@ export default function WordDetailView() {
   const [isInDeck, setIsInDeck] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [speechError, setSpeechError] = useState(null);
+
+  const canSpeak =
+    typeof window !== "undefined" &&
+    "speechSynthesis" in window &&
+    "SpeechSynthesisUtterance" in window;
+
+  useEffect(() => () => window.speechSynthesis?.cancel(), []);
 
   useEffect(() => {
     if (!id || id === "undefined") {
@@ -51,6 +60,28 @@ export default function WordDetailView() {
     }
   };
 
+  const handleSpeakWord = () => {
+    if (!canSpeak || !word?.parola) {
+      setSpeechError("La sintesi vocale non è disponibile su questo dispositivo.");
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    setSpeechError(null);
+
+    const utterance = new SpeechSynthesisUtterance(word.parola);
+    utterance.lang = "en-US";
+    utterance.rate = 0.9;
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => {
+      setIsSpeaking(false);
+      setSpeechError("Non è stato possibile riprodurre la pronuncia.");
+    };
+
+    window.speechSynthesis.speak(utterance);
+  };
+
   if (loading) {
     return (
       <div className="w-full py-28 text-center text-zinc-500 font-mono text-sm">
@@ -79,41 +110,34 @@ export default function WordDetailView() {
   return (
     <div className="w-full max-w-4xl mx-auto p-6 lg:p-10 flex flex-col gap-6 text-zinc-100">
       {/* Top Bar */}
-      <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col gap-3 border-b border-zinc-800 pb-4 sm:flex-row sm:items-center sm:justify-between">
+        <nav aria-label="Navigazione del vocabolo" className="flex w-full gap-2 sm:w-auto">
           <button
             type="button"
-            onClick={(e) => {
-                e.stopPropagation;
-                navigate(-1)
-            }}
-            className="text-xs font-mono text-zinc-400 hover:text-white transition cursor-pointer"
+            onClick={() => navigate(-1)}
+            className="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg border border-zinc-800 px-3 text-sm text-zinc-300 transition hover:border-zinc-600 hover:text-white sm:flex-none"
           >
-            ← Indietro
+            Indietro
           </button>
-          <span className="text-zinc-600">|</span>
           <button
             type="button"
-            onClick={(e) => {
-                e.stopPropagation;
-                navigate("/deck")
-            }}
-            className="text-xs font-mono text-cyan-400 hover:underline cursor-pointer"
+            onClick={() => navigate("/deck")}
+            className="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg border border-zinc-800 px-3 text-sm text-cyan-300 transition hover:border-cyan-700 hover:text-cyan-200 sm:flex-none"
           >
-            Vai al Mazzo
+            Il tuo mazzo
           </button>
-        </div>
+        </nav>
 
-        <div className="flex items-center gap-3">
+        <div className="flex w-full items-center gap-2 sm:w-auto sm:justify-end">
           {word.isCustom && (
-            <span className="px-2 py-0.5 text-[10px] font-mono uppercase bg-cyan-950/60 border border-cyan-700/60 text-cyan-300 rounded">
+            <span className="shrink-0 rounded border border-cyan-700/60 bg-cyan-950/60 px-2 py-1 text-[10px] font-mono uppercase text-cyan-300">
               Personale
             </span>
           )}
           <button
             type="button"
             onClick={handleToggleDeck}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold transition cursor-pointer border ${
+            className={`inline-flex min-h-11 flex-1 items-center justify-center rounded-xl border px-3 py-2 text-xs font-semibold transition cursor-pointer sm:flex-none sm:px-4 ${
               isInDeck
                 ? "bg-red-950/20 border-red-900/40 text-red-400 hover:bg-red-600 hover:text-white"
                 : "bg-cyan-400 text-black border-cyan-400 hover:bg-cyan-300 shadow-md shadow-cyan-500/20"
@@ -138,12 +162,28 @@ export default function WordDetailView() {
         </div>
 
         <div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight capitalize">
-            {word.parola}
-          </h1>
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="max-w-full break-words text-3xl font-extrabold text-white capitalize sm:text-4xl">
+              {word.parola}
+            </h1>
+            <button
+              type="button"
+              onClick={handleSpeakWord}
+              disabled={!canSpeak}
+              aria-label={`Ascolta la pronuncia inglese di ${word.parola}`}
+              className="inline-flex min-h-10 items-center justify-center rounded-lg border border-zinc-700 px-3 text-sm text-cyan-300 transition hover:border-cyan-500 hover:bg-cyan-950/40 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isSpeaking ? "In riproduzione" : "Ascolta"}
+            </button>
+          </div>
           <p className="text-xl sm:text-2xl text-cyan-400 font-medium mt-2 capitalize">
             {word.traduzione}
           </p>
+          {speechError && (
+            <p role="status" className="mt-2 text-xs text-amber-300">
+              {speechError}
+            </p>
+          )}
         </div>
       </div>
 

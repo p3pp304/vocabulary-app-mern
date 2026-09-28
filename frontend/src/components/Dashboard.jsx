@@ -46,6 +46,8 @@ export default function Dashboard({ currentTab = "explore" }) {
       navigate("/dashboard");
     } else if (newTab === "deck") {
       navigate("/deck");
+    } else if (newTab === "flashcards") {
+      navigate("/flashcards");
     }
   };
 
@@ -140,8 +142,8 @@ export default function Dashboard({ currentTab = "explore" }) {
         )}
 
         {currentTab === "flashcards" && (
-          <div className="p-8 text-center bg-zinc-900/20 border border-dashed border-zinc-800 rounded-2xl text-zinc-400">
-            Sezione Flashcard in arrivo.
+          <div role="status" className="rounded-2xl border border-dashed border-zinc-800 bg-zinc-900/20 p-8 text-center text-sm font-mono uppercase text-zinc-400">
+            SEZIONE IN ARRIVO
           </div>
         )}
       </div>

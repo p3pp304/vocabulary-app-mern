@@ -13,13 +13,20 @@ export default function MyDeck({
   // Carica a schermo intero solo la primissima volta in assoluto
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [speakingWordId, setSpeakingWordId] = useState(null);
 
   const [selectedLevel, setSelectedLevel] = useState([]);
   const [selectedTheme, setSelectedTheme] = useState([]);
   const navigate = useNavigate();
+  const supportsSpeech =
+    typeof window !== "undefined" &&
+    "speechSynthesis" in window &&
+    "SpeechSynthesisUtterance" in window;
 
   // Flag per sapere se abbiamo già caricato almeno una volta
   const hasLoadedOnce = useRef(false);
+
+  useEffect(() => () => window.speechSynthesis?.cancel(), []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -78,6 +85,21 @@ export default function MyDeck({
     if (toggleSaveWord) {
       await toggleSaveWord(targetId);
     }
+  };
+
+  const handleSpeakWord = (event, word, targetId) => {
+    event.stopPropagation();
+    event.preventDefault();
+    if (!supportsSpeech) return;
+
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(word.parola);
+    utterance.lang = "en-US";
+    utterance.rate = 0.9;
+    utterance.onstart = () => setSpeakingWordId(targetId);
+    utterance.onend = () => setSpeakingWordId(null);
+    utterance.onerror = () => setSpeakingWordId(null);
+    window.speechSynthesis.speak(utterance);
   };
 
   const toggleLevelFilter = (lvl) => {
@@ -208,7 +230,7 @@ export default function MyDeck({
                   onClick={() => onSelectWord(targetId)}
                   className="p-4 bg-zinc-900/60 border border-zinc-800 hover:border-zinc-700 rounded-2xl flex items-center justify-between gap-3 transition duration-150 group cursor-pointer hover:bg-zinc-900/90"
                 >
-                  <div className="flex flex-col">
+                  <div className="flex min-w-0 flex-1 flex-col">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-xs font-mono text-purple-400 bg-purple-950/40 border border-purple-800/40 px-1.5 py-0.5 rounded">
                         {word.livello}
@@ -224,20 +246,33 @@ export default function MyDeck({
                         </span>
                       )}
                     </div>
-                    <span className="text-base font-bold text-white capitalize group-hover:text-cyan-300 transition-colors">
+                    <span className="wrap-break-word text-base font-bold text-white capitalize group-hover:text-cyan-300 transition-colors">
                       {word.parola}
                     </span>
-                    <span className="text-xs text-zinc-400">{word.traduzione}</span>
+                    <span className="wrap-break-word text-xs text-zinc-400">{word.traduzione}</span>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={(e) => handleRemoveWord(e, targetId)}
-                    className="p-2.5 rounded-xl border border-red-900/40 bg-red-950/20 text-red-400 text-xs font-semibold hover:bg-red-600 hover:text-white transition cursor-pointer"
-                    title="Rimuovi dal mazzo"
-                  >
-                    Rimuovi
-                  </button>
+                  <div className="flex shrink-0 flex-col gap-2">
+                    <button
+                      type="button"
+                      onClick={(event) => handleSpeakWord(event, word, targetId)}
+                      disabled={!supportsSpeech}
+                      aria-label={`Ascolta la pronuncia inglese di ${word.parola}`}
+                      aria-pressed={speakingWordId === targetId}
+                      title={supportsSpeech ? `Ascolta ${word.parola}` : "Sintesi vocale non disponibile"}
+                      className="min-h-10 rounded-xl border border-zinc-700 px-3 text-xs font-semibold text-cyan-300 transition hover:border-cyan-500 hover:bg-cyan-950/40 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {speakingWordId === targetId ? "In riproduzione" : "Ascolta"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => handleRemoveWord(e, targetId)}
+                      className="min-h-10 rounded-xl border border-red-900/40 bg-red-950/20 px-3 text-xs font-semibold text-red-400 transition hover:bg-red-600 hover:text-white cursor-pointer"
+                      title="Rimuovi dal mazzo"
+                    >
+                      Rimuovi
+                    </button>
+                  </div>
                 </div>
               );
             })}

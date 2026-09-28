@@ -20,6 +20,29 @@ export default function ExploreView({
   const [totalWords, setTotalWords] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [speakingWordId, setSpeakingWordId] = useState(null);
+
+  const supportsSpeech =
+    typeof window !== 'undefined' &&
+    'speechSynthesis' in window &&
+    'SpeechSynthesisUtterance' in window;
+
+  useEffect(() => () => window.speechSynthesis?.cancel(), []);
+
+  const handleSpeakWord = (event, word) => {
+    event.stopPropagation();
+    event.preventDefault();
+    if (!supportsSpeech) return;
+
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(word.parola);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.9;
+    utterance.onstart = () => setSpeakingWordId(word._id);
+    utterance.onend = () => setSpeakingWordId(null);
+    utterance.onerror = () => setSpeakingWordId(null);
+    window.speechSynthesis.speak(utterance);
+  };
 
   const toggleLevelFilter = (lvl) => {
     setSelectedLevel((prev) =>
@@ -205,7 +228,7 @@ export default function ExploreView({
                     onClick={() => onSelectWord(wordId)}
                     className="p-4 bg-zinc-900/60 border border-zinc-800 hover:border-zinc-700 rounded-2xl flex items-center justify-between gap-3 transition group cursor-pointer"
                   >
-                    <div className="flex flex-col">
+                    <div className="flex min-w-0 flex-1 flex-col">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-xs font-mono text-purple-400 bg-purple-950/40 border border-purple-800/40 px-1.5 py-0.5 rounded">
                           {word.livello}
@@ -214,30 +237,43 @@ export default function ExploreView({
                           {word.tema}
                         </span>
                       </div>
-                      <span className="text-base font-bold text-white group-hover:text-cyan-300 transition-colors capitalize">
+                      <span className="wrap-break-word text-base font-bold text-white group-hover:text-cyan-300 transition-colors capitalize">
                         {word.parola}
                       </span>
-                      <span className="text-xs text-zinc-400 capitalize">
+                      <span className="wrap-break-word text-xs text-zinc-400 capitalize">
                         {word.traduzione}
                       </span>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        toggleSaveWord(wordId);
-                      }}
-                      className={`p-2.5 rounded-xl border text-xs font-semibold transition cursor-pointer ${
-                        isSaved
-                          ? 'bg-emerald-950/40 border-emerald-600 text-emerald-400'
-                          : 'bg-zinc-800/60 border-zinc-700 text-zinc-300 hover:bg-cyan-500 hover:text-black hover:border-cyan-400'
-                      }`}
-                      title={isSaved ? 'Rimuovi dal mio mazzo' : 'Aggiungi al mio mazzo'}
-                    >
-                      {isSaved ? '✓ Nel Mazzo' : '+ Aggiungi'}
-                    </button>
+                    <div className="flex shrink-0 flex-col gap-2">
+                      <button
+                        type="button"
+                        onClick={(event) => handleSpeakWord(event, word)}
+                        disabled={!supportsSpeech}
+                        aria-label={`Ascolta la pronuncia inglese di ${word.parola}`}
+                        aria-pressed={speakingWordId === wordId}
+                        title={supportsSpeech ? `Ascolta ${word.parola}` : 'Sintesi vocale non disponibile'}
+                        className="min-h-10 rounded-xl border border-zinc-700 px-3 text-xs font-semibold text-cyan-300 transition hover:border-cyan-500 hover:bg-cyan-950/40 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {speakingWordId === wordId ? 'In riproduzione' : 'Ascolta'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          toggleSaveWord(wordId);
+                        }}
+                        className={`min-h-10 rounded-xl border px-2.5 text-xs font-semibold transition cursor-pointer ${
+                          isSaved
+                            ? 'bg-emerald-950/40 border-emerald-600 text-emerald-400'
+                            : 'bg-zinc-800/60 border-zinc-700 text-zinc-300 hover:bg-cyan-500 hover:text-black hover:border-cyan-400'
+                        }`}
+                        title={isSaved ? 'Rimuovi dal mio mazzo' : 'Aggiungi al mio mazzo'}
+                      >
+                        {isSaved ? '✓ Nel Mazzo' : '+ Aggiungi'}
+                      </button>
+                    </div>
                   </div>
                 );
               })}
