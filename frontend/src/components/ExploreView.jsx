@@ -104,6 +104,10 @@ export default function ExploreView({
     };
   }, [selectedLang, page, selectedLevel, selectedTheme, searchQuery]);
 
+  const savedWordsInResults = words.filter((word) =>
+    mySavedWords.includes(String(word._id))
+  ).length;
+
   return (
     <div className="flex flex-col gap-8 w-full">
       {/* Filtri Funzionali: Livello & Nucleo Tematico */}
@@ -199,7 +203,7 @@ export default function ExploreView({
             Vocaboli Consigliati ({totalWords})
           </h2>
           <span className="text-xs text-zinc-500 font-mono">
-            Salvati nel tuo mazzo: {mySavedWords.length}
+            Salvati tra i risultati: {savedWordsInResults}
           </span>
         </div>
 
