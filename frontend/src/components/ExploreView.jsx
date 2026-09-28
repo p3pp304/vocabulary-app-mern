@@ -198,12 +198,18 @@ export default function ExploreView({
 
       {/* Elenco Vocaboli */}
       <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-zinc-100">
-            Vocaboli Consigliati ({totalWords})
+        <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-base font-semibold leading-snug text-zinc-100 sm:text-lg">
+            Vocaboli Consigliati <span className="text-zinc-400">({totalWords})</span>
           </h2>
-          <span className="text-xs text-zinc-500 font-mono">
-            Salvati tra i risultati: {savedWordsInResults}
+          <span
+            aria-live="polite"
+            className="inline-flex min-h-8 max-w-full items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900/60 px-2.5 text-[11px] font-mono text-zinc-400 sm:text-xs"
+          >
+            <span>Salvati tra i risultati</span>
+            <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-md bg-emerald-950/50 px-1.5 font-semibold text-emerald-300">
+              {savedWordsInResults}
+            </span>
           </span>
         </div>
 
