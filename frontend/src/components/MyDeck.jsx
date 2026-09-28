@@ -260,7 +260,7 @@ export default function MyDeck({
                       aria-label={`Ascolta la pronuncia inglese di ${word.parola}`}
                       aria-pressed={speakingWordId === targetId}
                       title={supportsSpeech ? `Ascolta ${word.parola}` : "Sintesi vocale non disponibile"}
-                      className="min-h-10 rounded-xl border border-zinc-700 px-3 text-xs font-semibold text-cyan-300 transition hover:border-cyan-500 hover:bg-cyan-950/40 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="min-h-10 rounded-xl border border-zinc-700 px-3 text-xs font-semibold text-cyan-300 transition hover:border-cyan-500 hover:bg-cyan-950/40 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {speakingWordId === targetId ? "In riproduzione" : "Ascolta"}
                     </button>

@@ -115,14 +115,14 @@ export default function WordDetailView() {
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg border border-zinc-800 px-3 text-sm text-zinc-300 transition hover:border-zinc-600 hover:text-white sm:flex-none"
+            className="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg border border-zinc-800 px-3 text-sm text-zinc-300 transition hover:border-zinc-600 hover:text-white cursor-pointer sm:flex-none"
           >
             Indietro
           </button>
           <button
             type="button"
             onClick={() => navigate("/deck")}
-            className="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg border border-zinc-800 px-3 text-sm text-cyan-300 transition hover:border-cyan-700 hover:text-cyan-200 sm:flex-none"
+            className="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg border border-zinc-800 px-3 text-sm text-cyan-300 transition hover:border-cyan-700 hover:text-cyan-200 cursor-pointer sm:flex-none"
           >
             Il tuo mazzo
           </button>
@@ -171,7 +171,7 @@ export default function WordDetailView() {
               onClick={handleSpeakWord}
               disabled={!canSpeak}
               aria-label={`Ascolta la pronuncia inglese di ${word.parola}`}
-              className="inline-flex min-h-10 items-center justify-center rounded-lg border border-zinc-700 px-3 text-sm text-cyan-300 transition hover:border-cyan-500 hover:bg-cyan-950/40 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex min-h-10 items-center justify-center rounded-lg border border-zinc-700 px-3 text-sm text-cyan-300 transition hover:border-cyan-500 hover:bg-cyan-950/40 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isSpeaking ? "In riproduzione" : "Ascolta"}
             </button>
