@@ -1,7 +1,7 @@
 import { API_BASE_URL } from './apiConfig';
 
 export const addWordToDeck = async (wordId) => {
-  const res = await fetch(`${API_BASE_URL}/api/deck/`, {
+  const res = await fetch(`${API_BASE_URL}/api/deck`, {
     method: 'POST',
     credentials: 'include', // Invia il cookie con il token JWT
     headers: {

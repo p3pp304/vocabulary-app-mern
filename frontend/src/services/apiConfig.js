@@ -6,7 +6,7 @@ const configuredUrlIsLocal = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(?:\/|$
 
 export const API_BASE_URL =
   import.meta.env.PROD
-    ? configuredApiUrl || 'https://vocabulary-app-mern.onrender.com'
+    ? ''
     : configuredApiUrl && !configuredUrlIsLocal
       ? configuredApiUrl
       : LOCAL_API_URL;
