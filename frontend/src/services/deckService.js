@@ -12,7 +12,9 @@ export const addWordToDeck = async (wordId) => {
 
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.message || 'Errore durante l\'aggiunta al mazzo');
+    throw new Error(
+      errorData.message || `Errore durante l'aggiunta al mazzo (${res.status})`
+    );
   }
 
   return res.json();

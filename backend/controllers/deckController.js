@@ -1,5 +1,6 @@
 import DeckItem from "../models/DeckItem.js";
 import Word from "../models/word.js";
+import mongoose from "mongoose";
 
 // 1. GET /api/deck - Recupera tutti i vocaboli nel mazzo dell'utente (globali + custom)
 export const getMyDeck = async (req, res) => {
@@ -75,6 +76,10 @@ export const addWordToDeck = async (req, res) => {
       return res.status(400).json({ message: "wordId è obbligatorio." });
     }
 
+    if (!mongoose.isValidObjectId(wordId)) {
+      return res.status(400).json({ message: "ID del vocabolo non valido." });
+    }
+
     // Verifica che la parola esista nel catalogo globale
     const wordExists = await Word.findById(wordId);
     if (!wordExists) {
@@ -102,6 +107,9 @@ export const addWordToDeck = async (req, res) => {
     return res.status(201).json(newDeckItem);
   } catch (error) {
     console.error("Errore addWordToDeck:", error);
+    if (error.code === 11000) {
+      return res.status(409).json({ message: "La parola è già presente nel tuo mazzo." });
+    }
     return res.status(500).json({ message: "Errore durante l'aggiunta al mazzo." });
   }
 };
