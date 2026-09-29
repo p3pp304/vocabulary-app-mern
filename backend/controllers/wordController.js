@@ -60,85 +60,98 @@ export const getWords = async (req, res) => {
   }
 };
 
+// GET /api/words/:id (o /api/vocab/:id)
+// Funziona sia con wordId che con deckItemId
 export const getWordDetail = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.userId; // Dal middleware di autenticazione
+    const userId = req.userId; // Dal middleware auth (se presente)
 
-    // Validazione preventiva dell'ObjectId
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "ID vocabolo non valido." });
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ message: "ID non valido." });
     }
 
-    // 1. Cerca nel catalogo globale Word
-    const word = await Word.findById(id).lean();
-
-    if (word) {
-      // Controlla se l'utente loggato ha salvato questa parola nel mazzo
-      const deckEntry = userId
-        ? await DeckItem.findOne({ userId, wordId: word._id }).lean()
-        : null;
-
-      return res.status(200).json({
-        id: word._id,
-        parola: word.parola,
-        traduzione: deckEntry?.customTraduzione || word.traduzione,
-        livello: word.livello,
-        tema: word.tema,
-        lingua: word.lingua,
-        tipo: word.tipo || null,
-        pronuncia: word.pronuncia || null,
-        note: deckEntry?.customNote || word.note || "",
-        esempi: deckEntry?.customEsempi?.length > 0 
-          ? deckEntry.customEsempi 
-          : word.esempi || [],
-        sinonimi: word.sinonimi || [],
-        contrari: word.contrari || [],
-        isCustom: false,
-        isInDeck: Boolean(deckEntry),
-        deckData: deckEntry
-          ? {
-              deckItemId: deckEntry._id,
-              stato: deckEntry.stato,
-              ripetizioni: deckEntry.ripetizioni,
-              prossimoRipasso: deckEntry.prossimoRipasso,
-            }
-          : null,
-      });
-    }
-
-    // 2. Se non è in Word, cerca nei DeckItem dell'utente (parola custom privata)
+    // 1. Cerca se è un DeckItem (dell'utente loggato)
+    let deckItem = null;
     if (userId) {
-      const customItem = await DeckItem.findOne({ _id: id, userId }).lean();
+      deckItem = await DeckItem.findOne({
+        _id: id,
+        userId,
+      }).populate("wordId").lean();
+    }
 
-      if (customItem) {
-        return res.status(200).json({
-          id: customItem._id,
-          parola: customItem.customParola,
-          traduzione: customItem.customTraduzione,
-          livello: customItem.livello,
-          tema: customItem.tema,
-          lingua: customItem.lingua,
-          tipo: null,
-          pronuncia: null,
-          note: customItem.customNote || "",
-          esempi: customItem.customEsempi || [],
-          sinonimi: [],
-          contrari: [],
-          isCustom: true,
-          isInDeck: true,
-          deckData: {
-            deckItemId: customItem._id,
-            stato: customItem.stato,
-            ripetizioni: customItem.ripetizioni,
-            prossimoRipasso: customItem.prossimoRipasso,
-          },
-        });
+    let word = null;
+
+    if (deckItem) {
+      // Caso A: L'ID passato era un deckItemId!
+      // Se era collegato a una Word del catalogo, ce l'abbiamo già popolata in wordId
+      word = deckItem.wordId || null;
+    } else {
+      // Caso B: L'ID non era un deckItem, cerchiamo nella collezione Word del catalogo
+      word = await Word.findById(id).lean();
+
+      // Se esiste nel catalogo e l'utente è loggato, verifichiamo se l'utente la possiede già nel suo mazzo
+      if (word && userId) {
+        deckItem = await DeckItem.findOne({
+          userId,
+          wordId: word._id,
+        }).lean();
       }
     }
 
-    // 3. Non trovata né in Word né in DeckItem
-    return res.status(404).json({ message: "Vocabolo non trovato." });
+    // Se non esiste né come deckItem né come word di catalogo
+    if (!deckItem && !word) {
+      return res.status(404).json({ message: "Vocabolo non trovato." });
+    }
+
+    // A questo punto abbiamo tutti i dati necessari per comporre la risposta:
+    const isCustom = deckItem ? !deckItem.wordId : false;
+    const isInDeck = Boolean(deckItem);
+    const w = word || {};
+    const d = deckItem || {};
+
+    return res.status(200).json({
+      // Identificatori chiave
+      id: w._id || d._id,
+      wordId: w._id || null,
+      deckItemId: d._id || null,
+      isInDeck,
+      isCustom,
+
+      // Dati generali (priorità ai dati custom del mazzo se presenti, altrimenti catalogo)
+      parola: w.parola || d.customParola || "",
+      livello: w.livello || d.customLivello || "B1",
+      tema: w.tema || d.customTema || "generale",
+      lingua:  w.lingua || d.customLingua|| "en",
+      tipo: w.tipo || null,
+      pronuncia: w.pronuncia || null,
+      sinonimi: w.sinonimi || [],
+      contrari: w.contrari || [],
+
+      // 1. Dati Ufficiali di Catalogo (mostrati sempre a sinistra/base)
+      traduzioneCatalogo: w.traduzione || null,
+      noteCatalogo: w.note || null,
+      esempiCatalogo: Array.isArray(w.esempi) ? w.esempi : [],
+
+      // 2. Personalizzazioni Utente (mostrate a destra/personale se presenti)
+      customTraduzione: d.customTraduzione || null,
+      customNote: d.customNote || null,
+      customEsempi: Array.isArray(d.customEsempi) ? d.customEsempi : [],
+
+      // 3. Valore attivo pronto per la visualizzazione immediata
+      traduzione: w.traduzione || d.customTraduzione  || "",
+      note:  w.note || d.customNote || "",
+      esempi: d.customEsempi?.length > 0 ? w.esempi : ( d.customEsempi|| []),
+
+      // Dati flashcard/studio (null se non è nel mazzo)
+      studio: isInDeck
+        ? {
+            stato: d.stato,
+            ripetizioni: d.ripetizioni,
+            prossimoRipasso: d.prossimoRipasso,
+          }
+        : null,
+    });
   } catch (error) {
     console.error("Errore getWordDetail:", error);
     return res.status(500).json({ message: "Errore nel caricamento del vocabolo." });
