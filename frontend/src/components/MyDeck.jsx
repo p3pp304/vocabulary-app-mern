@@ -10,20 +10,18 @@ export default function MyDeck({
   onSelectWord,
 }) {
   const [deckWords, setDeckWords] = useState([]);
-  // Carica a schermo intero solo la primissima volta in assoluto
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState(null);
   const [speakingWordId, setSpeakingWordId] = useState(null);
 
   const [selectedLevel, setSelectedLevel] = useState([]);
   const [selectedTheme, setSelectedTheme] = useState([]);
-  const navigate = useNavigate();
+
   const supportsSpeech =
     typeof window !== "undefined" &&
     "speechSynthesis" in window &&
     "SpeechSynthesisUtterance" in window;
 
-  // Flag per sapere se abbiamo già caricato almeno una volta
   const hasLoadedOnce = useRef(false);
 
   useEffect(() => () => window.speechSynthesis?.cancel(), []);
@@ -32,7 +30,6 @@ export default function MyDeck({
     const controller = new AbortController();
 
     const fetchDeck = async () => {
-      // Mostra "Caricamento..." SOLO se è il primo mount in assoluto
       if (!hasLoadedOnce.current) {
         setInitialLoading(true);
       }
@@ -47,7 +44,9 @@ export default function MyDeck({
           }
         );
 
-        if (!res.ok) throw new Error("Errore nel recupero del mazzo");
+        if (!res.ok) {
+          throw new Error("Errore nel recupero del mazzo");
+        }
 
         const data = await res.json();
         setDeckWords(Array.isArray(data) ? data : []);
@@ -68,22 +67,20 @@ export default function MyDeck({
     return () => {
       controller.abort();
     };
-  }, [selectedLang]); // <-- DIPENDE SOLO DALLA LINGUA! Niente mySavedWords qui!
+  }, [selectedLang]);
 
-  // Rimozione immediata e silenziosa dalla UI (senza ricaricare nulla)
-  const handleRemoveWord = async (e, targetId) => {
-    e.stopPropagation(); // Blocca l'apertura del dettaglio
+  // Rimozione basata esclusivamente su deckItemId
+  const handleRemoveWord = async (e, targetDeckItemId) => {
+    e.stopPropagation();
 
-    // 1. Rimuove subito visivamente la card con animazione fluida
+    // Aggiornamento ottimistico locale
     setDeckWords((prev) =>
-      prev.filter(
-        (w) => String(w.wordId) !== String(targetId) && String(w.deckItemId) !== String(targetId)
-      )
+      prev.filter((w) => String(w.deckItemId) !== String(targetDeckItemId))
     );
 
-    // 2. Notifica il genitore e il backend in background
+    // Notifica il componente Dashboard che aggiorna i suoi conteggi e chiama l'API
     if (toggleSaveWord) {
-      await toggleSaveWord(targetId);
+      await toggleSaveWord(targetDeckItemId);
     }
   };
 
@@ -94,7 +91,9 @@ export default function MyDeck({
 
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(word.parola);
-    utterance.lang = "en-US";
+    
+    // Assegna la lingua corretta del vocabolo anziché forzare sempre l'inglese
+    utterance.lang = word.lingua || selectedLang || "en-UK";
     utterance.rate = 0.9;
     utterance.onstart = () => setSpeakingWordId(targetId);
     utterance.onend = () => setSpeakingWordId(null);
@@ -118,9 +117,13 @@ export default function MyDeck({
     const matchLevel = selectedLevel.length === 0 || selectedLevel.includes(item.livello);
     const matchTheme = selectedTheme.length === 0 || selectedTheme.includes(item.tema);
     const query = searchQuery.trim().toLowerCase();
+    
+    // Cerca sia nella parola che in entrambe le traduzioni
     const matchQuery =
       !query ||
       item.parola?.toLowerCase().includes(query) ||
+      item.traduzioneCatalogo?.toLowerCase().includes(query) ||
+      item.customTraduzione?.toLowerCase().includes(query) ||
       item.traduzione?.toLowerCase().includes(query);
 
     return matchLevel && matchTheme && matchQuery;
@@ -222,7 +225,7 @@ export default function MyDeck({
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredWords.map((word) => {
-              const targetId = String(word.wordId || word.deckItemId);
+              const targetId = String(word.deckItemId);
 
               return (
                 <div
@@ -230,8 +233,9 @@ export default function MyDeck({
                   onClick={() => onSelectWord(targetId)}
                   className="p-4 bg-zinc-900/60 border border-zinc-800 hover:border-zinc-700 rounded-2xl flex items-center justify-between gap-3 transition duration-150 group cursor-pointer hover:bg-zinc-900/90"
                 >
-                  <div className="flex min-w-0 flex-1 flex-col">
-                    <div className="flex items-center gap-2 mb-1">
+                  <div className="flex min-w-0 flex-1 flex-col gap-1">
+                    {/* Badge Livello, Tema e Custom */}
+                    <div className="flex items-center gap-2 mb-0.5">
                       <span className="text-xs font-mono text-purple-400 bg-purple-950/40 border border-purple-800/40 px-1.5 py-0.5 rounded">
                         {word.livello}
                       </span>
@@ -246,18 +250,42 @@ export default function MyDeck({
                         </span>
                       )}
                     </div>
+
+                    {/* Parola principale */}
                     <span className="wrap-break-word text-base font-bold text-white capitalize group-hover:text-cyan-300 transition-colors">
                       {word.parola}
                     </span>
-                    <span className="wrap-break-word text-xs text-zinc-400">{word.traduzione}</span>
+
+                    {/* Traduzioni: Base Catalogo e/o Personalizzata */}
+                    <div className="flex flex-col gap-0.5 text-xs">
+                      {word.traduzioneCatalogo && (
+                        <div className="flex items-baseline gap-1.5 text-zinc-400">
+                          <span className="text-[10px] uppercase font-mono text-zinc-500">Ufficiale:</span>
+                          <span className="truncate">{word.traduzioneCatalogo}</span>
+                        </div>
+                      )}
+
+                      {word.customTraduzione && (
+                        <div className="flex items-baseline gap-1.5 text-cyan-300 font-medium">
+                          <span className="text-[10px] uppercase font-mono text-cyan-500/80">Personalizzata:</span>
+                          <span className="truncate">{word.customTraduzione}</span>
+                        </div>
+                      )}
+
+                      {/* Fallback per parole interamente custom (senza traduzioneCatalogo) */}
+                      {!word.traduzioneCatalogo && !word.customTraduzione && word.traduzione && (
+                        <span className="text-zinc-400 truncate">{word.traduzione}</span>
+                      )}
+                    </div>
                   </div>
 
+                  {/* Pulsanti Azione */}
                   <div className="flex shrink-0 flex-col gap-2">
                     <button
                       type="button"
                       onClick={(event) => handleSpeakWord(event, word, targetId)}
                       disabled={!supportsSpeech}
-                      aria-label={`Ascolta la pronuncia inglese di ${word.parola}`}
+                      aria-label={`Ascolta la pronuncia di ${word.parola}`}
                       aria-pressed={speakingWordId === targetId}
                       title={supportsSpeech ? `Ascolta ${word.parola}` : "Sintesi vocale non disponibile"}
                       className="min-h-10 rounded-xl border border-zinc-700 px-3 text-xs font-semibold text-cyan-300 transition hover:border-cyan-500 hover:bg-cyan-950/40 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
