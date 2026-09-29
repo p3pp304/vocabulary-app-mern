@@ -1,46 +1,47 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import NavbarDashboard from "./Navbar-Dashboard";
 import ExploreView from "./ExploreView";
 import MyDeck from "./MyDeck";
 import AddWordModal from "./AddWordModal";
 import { LANGUAGES } from "../vocabularyData";
-import { addWordToDeck, removeWordFromDeck, createCustomDeckWord } from "../services/deckService";
-import { API_BASE_URL } from "../services/apiConfig";
+import {
+  getMyDeck,
+  addWordToDeck,
+  removeWordFromDeck,
+  createCustomDeckWord,
+} from "../services/deckService";
 
 export default function Dashboard({ currentTab = "explore" }) {
   const [selectedLang, setSelectedLang] = useState("en");
-  const [mySavedWords, setMySavedWords] = useState([]);
+  // Memorizziamo gli elementi del mazzo con la loro struttura completa
+  const [userDeck, setUserDeck] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
 
+  // Caricamento mazzo tramite la funzione di servizio
+  const fetchUserDeck = async () => {
+    try {
+      const data = await getMyDeck();
+      setUserDeck(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Impossibile recuperare il mazzo:", err);
+    }
+  };
+
   useEffect(() => {
-    const fetchUserDeck = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/deck`, {
-          credentials: "include",
-        });
-        if (!res.ok) return;
-        const data = await res.json();
-
-        const ids = data
-          .map((w) => {
-            const rawId = w.wordId || w.deckItemId || w._id;
-            return rawId ? String(rawId) : null;
-          })
-          .filter(Boolean);
-
-        setMySavedWords(ids);
-      } catch (err) {
-        console.error("Impossibile recuperare il mazzo:", err);
-      }
-    };
-
     fetchUserDeck();
   }, []);
 
-  // Cambio scheda sincronizzato con gli URL reali
+  // Lista di ID usata da ExploreView per sapere se la card ha l'icona "salvata"
+  const savedWordIds = userDeck.map((item) => {
+    if (item.wordId) {
+      return String(item.wordId);
+    }
+    return String(item.deckItemId);
+  });
+
   const handleTabChange = (newTab) => {
     if (newTab === "explore") {
       navigate("/dashboard");
@@ -61,43 +62,53 @@ export default function Dashboard({ currentTab = "explore" }) {
     }
   };
 
-  const toggleSaveWord = async (id) => {
-    const strId = String(id);
-    const isAlreadySaved = mySavedWords.includes(strId);
+  // Toggle che risolve SEMPRE il deckItemId corretto per la cancellazione
+  const toggleSaveWord = async (targetId) => {
+    const strId = String(targetId);
 
-    setMySavedWords((prev) =>
-      isAlreadySaved ? prev.filter((wordId) => wordId !== strId) : [...prev, strId]
-    );
+    // Cerca se esiste già nel mazzo (confrontando sia wordId che deckItemId)
+    const existingItem = userDeck.find((item) => {
+      const wId = item.wordId ? String(item.wordId) : null;
+      const dId = String(item.deckItemId);
+      return wId === strId || dId === strId;
+    });
 
-    try {
-      if (isAlreadySaved) {
-        await removeWordFromDeck(strId);
-      } else {
-        await addWordToDeck(strId);
+    if (existingItem) {
+      // 1. RIMOZIONE: abbiamo il deckItemId esatto da passare al backend
+      const deckItemIdToRemove = existingItem.deckItemId;
+
+      // Aggiornamento ottimistico dell'interfaccia
+      setUserDeck((prev) => prev.filter((item) => item.deckItemId !== deckItemIdToRemove));
+
+      try {
+        await removeWordFromDeck(deckItemIdToRemove);
+      } catch (err) {
+        console.error("Errore rimozione:", err);
+        // Rollback in caso di fallimento
+        setUserDeck((prev) => [...prev, existingItem]);
+        alert(err.message || "Operazione non riuscita");
       }
-    } catch (err) {
-      console.error(err);
-      setMySavedWords((prev) =>
-        isAlreadySaved ? [...prev, strId] : prev.filter((wordId) => wordId !== strId)
-      );
-      alert(err.message || "Operazione non riuscita");
+    } else {
+      // 2. AGGIUNTA: si tratta di un wordId proveniente dal catalogo di ExploreView
+      try {
+        await addWordToDeck(strId);
+        // Ricarichiamo il mazzo per ottenere il nuovo deckItemId generato da Mongo
+        await fetchUserDeck();
+      } catch (err) {
+        console.error("Errore aggiunta:", err);
+        alert(err.message || "Operazione non riuscita");
+      }
     }
   };
 
   const handleAddWord = async (newWordData) => {
     try {
-      const data = await createCustomDeckWord(newWordData);
-      const rawId = data.id || data.deckItemId || data.item?._id;
-
-      if (rawId) {
-        const newId = String(rawId);
-        setMySavedWords((prev) => (prev.includes(newId) ? prev : [...prev, newId]));
-      }
+      await createCustomDeckWord(newWordData);
+      await fetchUserDeck();
 
       if (newWordData.lingua && newWordData.lingua !== selectedLang) {
         setSelectedLang(newWordData.lingua);
       }
-
       setIsModalOpen(false);
     } catch (err) {
       console.error("Errore aggiunta vocabolo:", err);
@@ -114,7 +125,7 @@ export default function Dashboard({ currentTab = "explore" }) {
           LANGUAGES={LANGUAGES}
           activeTab={currentTab}
           setActiveTab={handleTabChange}
-          deckCount={mySavedWords.length}
+          deckCount={userDeck.length}
           onAddWord={handleAddWord}
           onOpenAddModal={() => setIsModalOpen(true)}
           searchQuery={searchQuery}
@@ -124,7 +135,7 @@ export default function Dashboard({ currentTab = "explore" }) {
         {currentTab === "explore" && (
           <ExploreView
             selectedLang={selectedLang}
-            mySavedWords={mySavedWords}
+            mySavedWords={savedWordIds}
             toggleSaveWord={toggleSaveWord}
             searchQuery={searchQuery}
             onSelectWord={handleSelectWord}
@@ -134,15 +145,18 @@ export default function Dashboard({ currentTab = "explore" }) {
         {currentTab === "deck" && (
           <MyDeck
             selectedLang={selectedLang}
-            mySavedWords={mySavedWords}
-            toggleSaveWord={toggleSaveWord}
+            deckItems={userDeck}
+            onDeckChange={fetchUserDeck}
             searchQuery={searchQuery}
             onSelectWord={handleSelectWord}
           />
         )}
 
         {currentTab === "flashcards" && (
-          <div role="status" className="rounded-2xl border border-dashed border-zinc-800 bg-zinc-900/20 p-8 text-center text-sm font-mono uppercase text-zinc-400">
+          <div
+            role="status"
+            className="rounded-2xl border border-dashed border-zinc-800 bg-zinc-900/20 p-8 text-center text-sm font-mono uppercase text-zinc-400"
+          >
             SEZIONE IN ARRIVO
           </div>
         )}
