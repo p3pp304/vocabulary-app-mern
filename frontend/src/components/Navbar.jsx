@@ -1,11 +1,16 @@
 import logo from '../assets/logo.png';
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link} from 'react-router-dom';
 import { useAuth } from '../store/AuthContext';
+import UserStatsModal from './UserStatsModal';
 
 export default function Navbar() {
 
   const {user, logout} =  useAuth()
+  const [isStatsOpen, setIsStatsOpen] = useState(false);
+
   return (
+    <>
     <header className="sticky top-0 z-50 w-full bg-black/75 backdrop-blur-md">
       {/* Header: h-14*/}
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-2">
@@ -23,15 +28,22 @@ export default function Navbar() {
         <nav className="flex items-center gap-3.5 text-sm">
           {user ? (
             <>
-              {/* Badge Utente */}
-              <div className="flex items-center gap-2 rounded-full py-1 pl-1 pr-3 border border-white/10 bg-white/5 transition cursor-pointer hover:bg-black/10 hover:border-amber-50">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-cyan-500/20 text-[10px] sm:text-xs font-semibold text-cyan-300">
-                  {user.username?.charAt(0).toUpperCase() || 'U'}
-                </span>
-                <span className="text-xs lg:text-sm font-medium text-zinc-300">
-                  {user.username || 'Utente'}
-                </span>
-              </div>
+                {/* Badge Utente */}
+              <button
+                type="button"
+                onClick={() => setIsStatsOpen(true)}
+                title="Vedi statistiche di studio"
+                className="text-left"
+              >
+                <div className="flex items-center gap-2 rounded-full py-1 pl-1 pr-3 border border-white/10 bg-white/5 transition cursor-pointer hover:bg-black/10 hover:border-amber-50">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-cyan-500/20 text-[10px] sm:text-xs font-semibold text-cyan-300">
+                    {user.username?.charAt(0).toUpperCase() || 'U'}
+                  </span>
+                  <span className="text-xs lg:text-sm font-medium text-zinc-300">
+                    {user.username || 'Utente'}
+                  </span>
+                </div>
+              </button>
 
               {/* Tasto Logout */}
               <Link
@@ -62,5 +74,12 @@ export default function Navbar() {
 
       </div>
     </header>
+    {/* Modale Statistiche */}
+    <UserStatsModal
+      isOpen={isStatsOpen}
+      onClose={() => setIsStatsOpen(false)}
+      user={user}
+    />
+    </>
   );
 }
