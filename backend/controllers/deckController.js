@@ -28,7 +28,7 @@ export const getMyDeck = async (req, res) => {
       const w = item.wordId || {};
 
       // Determinazione lingua per eventuale filtro
-      const linguaRecord = item.customLingua || w.lingua;
+      const linguaRecord = item.customLingua || w.lingua || "en";
       if (lingua && linguaRecord.toLowerCase() !== lingua.toLowerCase()) {
         continue;
       }
@@ -240,7 +240,8 @@ export const createCustomDeckWord = async (req, res) => {
 
     const cleanParola = parola.trim();
     const cleanTraduzione = traduzione.trim();
-    const cleanLingua = lingua.toLowerCase();
+    const cleanLingua = (lingua || "en").toLowerCase();
+    const cleanTema = (tema || "generale").toLowerCase();
 
     // 1. Cerca se la parola esiste già nel catalogo globale
     const existingWord = await Word.findOne({
@@ -267,6 +268,9 @@ export const createCustomDeckWord = async (req, res) => {
     if (existingWord) {
       itemData.wordId = existingWord._id;
       itemData.customTraduzione = cleanTraduzione !== existingWord.traduzione ? cleanTraduzione : null;
+      itemData.customLivello = livello && livello !== existingWord.livello ? livello : null;
+      itemData.customTema = cleanTema !== existingWord.tema ? cleanTema : null;
+      itemData.customLingua = cleanLingua !== existingWord.lingua ? cleanLingua : null;
     } else {
       itemData.wordId = null;
       itemData.customParola = cleanParola;
