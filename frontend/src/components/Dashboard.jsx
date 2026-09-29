@@ -17,17 +17,23 @@ export default function Dashboard({ currentTab = "explore" }) {
   const [selectedLang, setSelectedLang] = useState("en");
   // Memorizziamo gli elementi del mazzo con la loro struttura completa
   const [userDeck, setUserDeck] = useState([]);
+  const [isDeckLoading, setIsDeckLoading] = useState(true);
+  const [deckError, setDeckError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
 
   // Caricamento mazzo tramite la funzione di servizio
   const fetchUserDeck = async () => {
+    setDeckError(null);
     try {
       const data = await getMyDeck();
       setUserDeck(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Impossibile recuperare il mazzo:", err);
+      setDeckError(err.message || "Impossibile caricare il mazzo.");
+    } finally {
+      setIsDeckLoading(false);
     }
   };
 
@@ -147,7 +153,9 @@ export default function Dashboard({ currentTab = "explore" }) {
           <MyDeck
             selectedLang={selectedLang}
             deckItems={userDeck}
-            onDeckChange={fetchUserDeck}
+            isLoading={isDeckLoading}
+            error={deckError}
+            toggleSaveWord={toggleSaveWord}
             searchQuery={searchQuery}
             onSelectWord={handleSelectWord}
           />

@@ -1,17 +1,15 @@
-import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { CEFR_LEVELS, THEMES } from "../vocabularyData";
-import { API_BASE_URL } from "../services/apiConfig";
 
 export default function MyDeck({
   selectedLang,
+  deckItems = [],
+  isLoading = false,
+  error = null,
   toggleSaveWord,
   searchQuery = "",
   onSelectWord,
 }) {
-  const [deckWords, setDeckWords] = useState([]);
-  const [initialLoading, setInitialLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [speakingWordId, setSpeakingWordId] = useState(null);
 
   const [selectedLevel, setSelectedLevel] = useState([]);
@@ -22,63 +20,11 @@ export default function MyDeck({
     "speechSynthesis" in window &&
     "SpeechSynthesisUtterance" in window;
 
-  const hasLoadedOnce = useRef(false);
-
   useEffect(() => () => window.speechSynthesis?.cancel(), []);
 
-  useEffect(() => {
-    const controller = new AbortController();
-
-    const fetchDeck = async () => {
-      if (!hasLoadedOnce.current) {
-        setInitialLoading(true);
-      }
-      setError(null);
-
-      try {
-        const res = await fetch(
-          `${API_BASE_URL}/api/deck?lingua=${selectedLang}`,
-          {
-            credentials: "include",
-            signal: controller.signal,
-          }
-        );
-
-        if (!res.ok) {
-          throw new Error("Errore nel recupero del mazzo");
-        }
-
-        const data = await res.json();
-        setDeckWords(Array.isArray(data) ? data : []);
-        hasLoadedOnce.current = true;
-      } catch (err) {
-        if (err.name !== "AbortError") {
-          setError(err.message || "Impossibile caricare il mazzo.");
-        }
-      } finally {
-        if (!controller.signal.aborted) {
-          setInitialLoading(false);
-        }
-      }
-    };
-
-    fetchDeck();
-
-    return () => {
-      controller.abort();
-    };
-  }, [selectedLang]);
-
-  // Rimozione basata esclusivamente su deckItemId
+  // La Dashboard aggiorna la lista condivisa dopo la rimozione.
   const handleRemoveWord = async (e, targetDeckItemId) => {
     e.stopPropagation();
-
-    // Aggiornamento ottimistico locale
-    setDeckWords((prev) =>
-      prev.filter((w) => String(w.deckItemId) !== String(targetDeckItemId))
-    );
-
-    // Notifica il componente Dashboard che aggiorna i suoi conteggi e chiama l'API
     if (toggleSaveWord) {
       await toggleSaveWord(targetDeckItemId);
     }
@@ -113,7 +59,8 @@ export default function MyDeck({
     );
   };
 
-  const filteredWords = deckWords.filter((item) => {
+  const filteredWords = deckItems.filter((item) => {
+    const matchLanguage = item.lingua?.toLowerCase() === selectedLang.toLowerCase();
     const matchLevel = selectedLevel.length === 0 || selectedLevel.includes(item.livello);
     const matchTheme = selectedTheme.length === 0 || selectedTheme.includes(item.tema);
     const query = searchQuery.trim().toLowerCase();
@@ -126,7 +73,7 @@ export default function MyDeck({
       item.customTraduzione?.toLowerCase().includes(query) ||
       item.traduzione?.toLowerCase().includes(query);
 
-    return matchLevel && matchTheme && matchQuery;
+    return matchLanguage && matchLevel && matchTheme && matchQuery;
   });
 
   return (
@@ -214,7 +161,7 @@ export default function MyDeck({
           </div>
         )}
 
-        {initialLoading ? (
+        {isLoading ? (
           <div className="p-12 text-center text-zinc-500 text-sm font-mono animate-pulse">
             Caricamento del tuo mazzo...
           </div>
