@@ -18,22 +18,11 @@ const port = process.env.PORT || 3000;
 // 3. Origini consentite da CORS
 const allowedOrigins = [
   'http://localhost:5173', // frontend locale Vite
-  process.env.CLIENT_URL,  // URL del frontend su Vercel/Netlify
+  process.env.CLIENT_URL,  // URL del frontend su Vercel
 ].filter(Boolean); // rimuove valori null/undefined
 
 // 4. Middleware CORS (una sola volta, prima di ogni rotta)
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Non consentito da CORS'));
-      }
-    },
-    credentials: true,
-  })
-);
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 
 // 5. Middleware di parsing
 app.use(express.json());
