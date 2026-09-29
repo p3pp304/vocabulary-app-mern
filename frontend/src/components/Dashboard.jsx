@@ -139,30 +139,40 @@ export default function Dashboard({ currentTab = "explore" }) {
           setSearchQuery={setSearchQuery}
         />
 
-        {currentTab === "explore" && (
-          <ExploreView
-            selectedLang={selectedLang}
-            mySavedWords={savedWordIds}
-            toggleSaveWord={toggleSaveWord}
-            searchQuery={searchQuery}
-            onSelectWord={handleSelectWord}
-          />
-        )}
+        {selectedLang !== "en" ? (
+          <div className="flex min-h-[40vh] w-full items-center justify-center">
+            <h1 className="text-center font-mono text-xl font-semibold uppercase tracking-widest text-zinc-300">
+              SEZIONE IN ARRIVO
+            </h1>
+          </div>
+        ) : (
+          <>
+            {currentTab === "explore" && (
+              <ExploreView
+                selectedLang={selectedLang}
+                mySavedWords={savedWordIds}
+                toggleSaveWord={toggleSaveWord}
+                searchQuery={searchQuery}
+                onSelectWord={handleSelectWord}
+              />
+            )}
 
-        {currentTab === "deck" && (
-          <MyDeck
-            selectedLang={selectedLang}
-            deckItems={userDeck}
-            isLoading={isDeckLoading}
-            error={deckError}
-            toggleSaveWord={toggleSaveWord}
-            searchQuery={searchQuery}
-            onSelectWord={handleSelectWord}
-          />
-        )}
+            {currentTab === "deck" && (
+              <MyDeck
+                selectedLang={selectedLang}
+                deckItems={userDeck}
+                isLoading={isDeckLoading}
+                error={deckError}
+                toggleSaveWord={toggleSaveWord}
+                searchQuery={searchQuery}
+                onSelectWord={handleSelectWord}
+              />
+            )}
 
-        {currentTab === "flashcards" && (
-          <FlashcardView selectedLang={selectedLang} />
+            {currentTab === "flashcards" && (
+              <FlashcardView selectedLang={selectedLang} />
+            )}
+          </>
         )}
       </div>
 
