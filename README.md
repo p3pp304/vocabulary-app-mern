@@ -31,5 +31,4 @@ L'applicazione è realizzata seguendo i principi dello stack tecnologico **MERN*
 - **🔐 Autenticazione & Sessione Protetta:** Registrazione e accesso utente gestiti con JWT e cookie sicuri `HttpOnly`.
 
 ---
-📄 Licenza
-Distribuito sotto licenza MIT.
+📄 Distribuito sotto licenza MIT.
