@@ -17,8 +17,9 @@ const port = process.env.PORT || 3000;
 
 // 3. Origini consentite da CORS
 const allowedOrigins = [
-  'http://localhost:5173', // frontend locale Vite
-  process.env.CLIENT_URL,  // URL del frontend su Vercel
+  process.env.NODE_ENV === "production" ?
+  process.env.CLIENT_URL:  // URL del frontend su Vercel
+  'http://localhost:5173' // frontend locale Vite
 ].filter(Boolean); // rimuove valori null/undefined
 
 // 4. Middleware CORS (una sola volta, prima di ogni rotta)
