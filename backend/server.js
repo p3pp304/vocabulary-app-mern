@@ -7,6 +7,8 @@ import cookieParser from 'cookie-parser';
 import userRouter from './routers/authRouter.js';
 import wordRouter from './routers/wordRouter.js';
 import deckRouter from './routers/deckRouter.js';
+import flashcardsRouter from './routers/flashcardRouter.js'
+import UserStatsRouter from './routers/userStatsRouter.js';
 
 // 1. Inizializza subito le variabili d'ambiente
 dotenv.config();
@@ -47,6 +49,8 @@ mongoose
 app.use('/api/auth', userRouter);
 app.use('/api/words', wordRouter);
 app.use('/api/deck', deckRouter);
+app.use('/api/flashcards', flashcardsRouter);
+app.use('/api', UserStatsRouter);
 
 // 9. Avvio server
 app.listen(port, () => {
