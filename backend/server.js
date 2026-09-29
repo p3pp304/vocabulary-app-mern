@@ -24,24 +24,23 @@ const allowedOrigins = [
 // 4. Middleware CORS (una sola volta, prima di ogni rotta)
 app.use(cors({ origin: allowedOrigins, credentials: true }));
 
-// 5. Middleware di parsing
-app.use(express.json());
-app.use(cookieParser());
+// 5. Middleware di parsing (processo di trasformazioni da dati grezzi a dati strutturati)
+app.use(express.json()); // paersing JSON  
+app.use(cookieParser());  // parsing COOKIE
+
+/* DATO GREZZO --> '{"username": "mario", "age": 30}'
+   CON PARSING --> 
+{
+  username: "mario",
+  age: 30
+}
+  */
 
 // 6. Connessione a MongoDB
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB connesso con successo'))
   .catch((error) => console.error('Errore di connessione a MongoDB:', error));
-
-// 7. Endpoint base di test
-app.get('/', (req, res) => {
-  res.send('Benvenuto');
-});
-
-app.get('/home', (req, res) => {
-  res.send('Sim trnat');
-});
 
 // 8. Router API
 app.use('/api/auth', userRouter);
