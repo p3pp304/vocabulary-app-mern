@@ -119,10 +119,10 @@ export const getWordDetail = async (req, res) => {
       isCustom,
 
       // Dati generali (priorità ai dati custom del mazzo se presenti, altrimenti catalogo)
-      parola: w.parola || d.customParola || "",
-      livello: w.livello || d.customLivello || "B1",
-      tema: w.tema || d.customTema || "generale",
-      lingua:  w.lingua || d.customLingua|| "en",
+      parola: d.customParola || w.parola || "",
+      livello: d.customLivello || w.livello || "B1",
+      tema: d.customTema || w.tema || "generale",
+      lingua: d.customLingua || w.lingua || "en",
       tipo: w.tipo || null,
       pronuncia: w.pronuncia || null,
       sinonimi: w.sinonimi || [],
@@ -137,11 +137,15 @@ export const getWordDetail = async (req, res) => {
       customTraduzione: d.customTraduzione || null,
       customNote: d.customNote || null,
       customEsempi: Array.isArray(d.customEsempi) ? d.customEsempi : [],
+      customParola: d.customParola || null,
+      customLingua: d.customLingua || null,
+      customLivello: d.customLivello || null,
+      customTema: d.customTema || null,
 
       // 3. Valore attivo pronto per la visualizzazione immediata
-      traduzione: w.traduzione || d.customTraduzione  || "",
-      note:  w.note || d.customNote || "",
-      esempi: d.customEsempi?.length > 0 ? w.esempi : ( d.customEsempi|| []),
+      traduzione: d.customTraduzione || w.traduzione || "",
+      note: d.customNote || w.note || "",
+      esempi: d.customEsempi?.length > 0 ? d.customEsempi : (w.esempi || []),
 
       // Dati flashcard/studio (null se non è nel mazzo)
       studio: isInDeck
