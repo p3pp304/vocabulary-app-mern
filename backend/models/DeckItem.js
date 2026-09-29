@@ -21,9 +21,9 @@ const deckItemSchema = new mongoose.Schema(
     customTraduzione: { type: String, default: null, trim: true },
     customNote: { type: String, default: null, trim: true },
     customEsempi: [{ type: String, trim: true }],
-    lingua: { type: String, default: "en", lowercase: true },
-    livello: { type: String, default: "B1" },
-    tema: { type: String, default: "tech", lowercase: true },
+    customLingua: { type: String, default: "en", lowercase: true },
+    customLivello: { type: String, default: "B1" },
+    customTema: { type: String, default: "tech", lowercase: true },
 
     // Campi di studio / spaced repetition
     stato: {
