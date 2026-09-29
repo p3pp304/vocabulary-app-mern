@@ -1,5 +1,41 @@
 import mongoose from "mongoose";
 import DeckItem from "../models/DeckItem.js";
+import FlashcardSession from "../models/FlashcardSession.js";
+
+export const saveFlashcardSessionScore = async (req, res) => {
+  try {
+    const correctAnswers = Number(req.body.correctAnswers);
+    const totalCards = Number(req.body.totalCards);
+
+    if (
+      !Number.isInteger(correctAnswers) ||
+      !Number.isInteger(totalCards) ||
+      totalCards < 1 ||
+      correctAnswers < 0 ||
+      correctAnswers > totalCards
+    ) {
+      return res.status(400).json({ message: "Punteggio della sessione non valido." });
+    }
+
+    const score = Math.round((correctAnswers / totalCards) * 100);
+    const session = await FlashcardSession.create({
+      userId: req.userId,
+      correctAnswers,
+      totalCards,
+      score,
+      lingua: req.body.lingua || "en",
+    });
+
+    return res.status(201).json({
+      score: session.score,
+      correctAnswers: session.correctAnswers,
+      totalCards: session.totalCards,
+    });
+  } catch (error) {
+    console.error("Errore salvataggio punteggio flashcard:", error);
+    return res.status(500).json({ message: "Errore nel salvataggio del punteggio." });
+  }
+};
 
 // GET /api/flashcards?lingua=en - Recupera i vocaboli da ripassare
 export const getFlashcards = async (req, res) => {

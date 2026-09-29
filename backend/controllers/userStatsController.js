@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import DeckItem from "../models/DeckItem.js";
+import FlashcardSession from "../models/FlashcardSession.js";
 
 // GET /api/user/stats
 export const getUserStats = async (req, res) => {
@@ -39,6 +40,17 @@ export const getUserStats = async (req, res) => {
       $or: [{ prossimoRipasso: { $lte: now } }, { prossimoRipasso: null }],
     });
 
+    const [scoreSummary] = await FlashcardSession.aggregate([
+      { $match: { userId: userObjectId } },
+      {
+        $group: {
+          _id: null,
+          mediaPunteggi: { $avg: "$score" },
+          sessioniConcluse: { $sum: 1 },
+        },
+      },
+    ]);
+
     // 3. Percentuale di padronanza globale
     const masteryPercentage = counts.totale > 0 
       ? Math.round((counts.appresa / counts.totale) * 100) 
@@ -51,6 +63,8 @@ export const getUserStats = async (req, res) => {
       appresa: counts.appresa,
       daRipassareSubito,
       masteryPercentage,
+      mediaPunteggi: Math.round(scoreSummary?.mediaPunteggi || 0),
+      sessioniConcluse: scoreSummary?.sessioniConcluse || 0,
     });
   } catch (error) {
     console.error("Errore recupero statistiche:", error);

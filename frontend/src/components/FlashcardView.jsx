@@ -1,5 +1,9 @@
 import { useState, useEffect } from "react";
-import { getFlashcards, submitFlashcardReview } from "../services/flashcardService";
+import {
+  getFlashcards,
+  saveFlashcardSessionScore,
+  submitFlashcardReview,
+} from "../services/flashcardService";
 
 export default function FlashcardView({ selectedLang }) {
   const [cards, setCards] = useState([]);
@@ -9,6 +13,9 @@ export default function FlashcardView({ selectedLang }) {
   const [error, setError] = useState(null);
   const [sessionCompleted, setSessionCompleted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [correctAnswers, setCorrectAnswers] = useState(0);
+  const [sessionScore, setSessionScore] = useState(null);
+  const [scoreSaveError, setScoreSaveError] = useState(null);
 
   const supportsSpeech =
     typeof window !== "undefined" &&
@@ -21,6 +28,9 @@ export default function FlashcardView({ selectedLang }) {
     setSessionCompleted(false);
     setCurrentIndex(0);
     setIsFlipped(false);
+    setCorrectAnswers(0);
+    setSessionScore(null);
+    setScoreSaveError(null);
 
     try {
       const data = await getFlashcards(selectedLang);
@@ -55,6 +65,8 @@ export default function FlashcardView({ selectedLang }) {
     setSubmitting(true);
     try {
       await submitFlashcardReview(currentCard.deckItemId, remembered);
+      const nextCorrectAnswers = correctAnswers + (remembered ? 1 : 0);
+      setCorrectAnswers(nextCorrectAnswers);
 
       setIsFlipped(false);
 
@@ -64,6 +76,19 @@ export default function FlashcardView({ selectedLang }) {
           setCurrentIndex((prev) => prev + 1);
         }, 150);
       } else {
+        const finalScore = Math.round((nextCorrectAnswers / cards.length) * 100);
+        setSessionScore(finalScore);
+
+        try {
+          await saveFlashcardSessionScore({
+            correctAnswers: nextCorrectAnswers,
+            totalCards: cards.length,
+            lingua: selectedLang,
+          });
+        } catch (scoreError) {
+          setScoreSaveError(scoreError.message || "Punteggio non salvato nelle statistiche.");
+        }
+
         setSessionCompleted(true);
       }
     } catch (err) {
@@ -96,17 +121,41 @@ export default function FlashcardView({ selectedLang }) {
     );
   }
 
-  if (cards.length === 0 || sessionCompleted) {
+  if (sessionCompleted) {
+    return (
+      <div className="max-w-md mx-auto p-8 bg-zinc-900/50 border border-zinc-800 rounded-3xl text-center flex flex-col items-center gap-4">
+        <div className="w-14 h-14 rounded-2xl bg-emerald-950/60 border border-emerald-800/50 flex items-center justify-center text-emerald-400 text-2xl">
+          ✓
+        </div>
+        <h2 className="text-xl font-bold text-white">Sessione completata</h2>
+        <div className="text-5xl font-black text-emerald-300">{sessionScore}%</div>
+        <p className="text-sm text-zinc-300">
+          Ricordate {correctAnswers} su {cards.length} parole
+        </p>
+        {scoreSaveError && (
+          <p role="status" className="text-xs text-amber-300">
+            Punteggio non aggiunto alla media: {scoreSaveError}
+          </p>
+        )}
+        <button
+          onClick={loadCards}
+          className="mt-2 px-6 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer"
+        >
+          Ricarica Flashcard
+        </button>
+      </div>
+    );
+  }
+
+  if (cards.length === 0) {
     return (
       <div className="max-w-md mx-auto p-8 bg-zinc-900/50 border border-zinc-800 rounded-3xl text-center flex flex-col items-center gap-4">
         <div className="w-14 h-14 rounded-2xl bg-cyan-950/60 border border-cyan-800/50 flex items-center justify-center text-cyan-400 text-2xl">
           ✓
         </div>
-        <h2 className="text-xl font-bold text-white">Ottimo lavoro!</h2>
+        <h2 className="text-xl font-bold text-white">Nessun ripasso in programma</h2>
         <p className="text-xs whitespace-pre-line text-zinc-400 leading-relaxed max-w-xs">
-          {sessionCompleted
-            ? "Hai completato tutte le carte in programma per questa sessione."
-            : "Non hai vocaboli da ripassare al momento per questa lingua. \nInserisci altri vocaboli nel tuo mazzo per continuare ad esercitarti!"}
+          Non hai vocaboli da ripassare al momento per questa lingua. Inserisci altri vocaboli nel tuo mazzo per continuare ad esercitarti!
         </p>
         <button
           onClick={loadCards}

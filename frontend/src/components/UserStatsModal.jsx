@@ -99,6 +99,16 @@ export default function UserStatsModal({ isOpen, onClose, user }) {
                 <span className="text-[10px] font-mono text-cyan-400 uppercase">Pronte al Ripasso</span>
                 <span className="text-2xl font-black text-cyan-300">{stats.daRipassareSubito}</span>
               </div>
+
+              <div className="p-3.5 bg-emerald-950/20 border border-emerald-900/40 rounded-2xl flex flex-col gap-1">
+                <span className="text-[10px] font-mono text-emerald-400 uppercase">Media Punteggi</span>
+                <span className="text-2xl font-black text-emerald-300">
+                  {stats.sessioniConcluse ? `${stats.mediaPunteggi}%` : "—"}
+                </span>
+                <span className="text-[10px] text-zinc-500">
+                  Su {stats.sessioniConcluse ?? 0} sessioni
+                </span>
+              </div>
             </div>
 
             {/* Dettaglio Stati SRS */}

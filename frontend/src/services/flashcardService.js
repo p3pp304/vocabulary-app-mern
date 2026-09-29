@@ -30,3 +30,21 @@ export const submitFlashcardReview = async (deckItemId, remembered) => {
 
   return res.json();
 };
+
+export const saveFlashcardSessionScore = async ({ correctAnswers, totalCards, lingua }) => {
+  const res = await fetch(`${API_BASE_URL}/api/flashcards/sessions`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ correctAnswers, totalCards, lingua }),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || "Errore nel salvataggio del punteggio");
+  }
+
+  return res.json();
+};
