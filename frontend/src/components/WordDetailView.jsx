@@ -228,7 +228,7 @@ export default function WordDetail() {
             Nel tuo mazzo
           </div>
         ) : (
-          <div className=" text-xs py-3 font-mono uppercase tracking-wider text-zinc-400 bg-zinc-900 border border-zinc-800 rounded-2xl">
+          <div className=" text-xs py-3 px-4 font-mono uppercase tracking-wider text-zinc-400 bg-zinc-900 border border-zinc-800 rounded-2xl">
             Catalogo
           </div>
         )}
