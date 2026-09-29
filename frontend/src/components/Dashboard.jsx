@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import NavbarDashboard from "./Navbar-Dashboard";
 import ExploreView from "./ExploreView";
 import MyDeck from "./MyDeck";
+import FlashcardView from "./FlashcardView";
 import AddWordModal from "./AddWordModal";
 import { LANGUAGES } from "../vocabularyData";
 import {
@@ -153,12 +154,7 @@ export default function Dashboard({ currentTab = "explore" }) {
         )}
 
         {currentTab === "flashcards" && (
-          <div
-            role="status"
-            className="rounded-2xl border border-dashed border-zinc-800 bg-zinc-900/20 p-8 text-center text-sm font-mono uppercase text-zinc-400"
-          >
-            SEZIONE IN ARRIVO
-          </div>
+          <FlashcardView selectedLang={selectedLang} />
         )}
       </div>
 
