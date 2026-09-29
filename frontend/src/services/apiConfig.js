@@ -1,12 +1,11 @@
-const LOCAL_API_URL = 'http://localhost:3000';
-const configuredApiUrl = import.meta.env.VITE_BACKEND_URL?.trim().replace(/\/+$/, '');
-const configuredUrlIsLocal = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(?:\/|$)/i.test(
-  configuredApiUrl || '',
-);
+const localUrl = import.meta.env.VITE_LOCAL_BACKEND_URL || 'http://localhost:3000';
+const prodUrl = import.meta.env.VITE_PROD_BACKEND_URL;
+const isProd = import.meta.env.VITE_IS_PROD === 'true';
 
-export const API_BASE_URL =
-  import.meta.env.PROD
-    ? ''
-    : configuredApiUrl && !configuredUrlIsLocal
-      ? configuredApiUrl
-      : LOCAL_API_URL;
+let activeUrl = localUrl
+
+if (isProd) {
+  activeUrl = prodUrl || localUrl;
+}
+
+export const API_BASE_URL = activeUrl
