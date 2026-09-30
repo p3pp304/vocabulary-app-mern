@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { CEFR_LEVELS, THEMES } from '../vocabularyData';
 import { fetchWords } from '../services/fetchWords';
+import { isSpeechSupported, speakText } from '../services/speechService';
 
 export default function ExploreView({
   selectedLang,
@@ -22,10 +23,7 @@ export default function ExploreView({
   const [error, setError] = useState(null);
   const [speakingWordId, setSpeakingWordId] = useState(null);
 
-  const supportsSpeech =
-    typeof window !== 'undefined' &&
-    'speechSynthesis' in window &&
-    'SpeechSynthesisUtterance' in window;
+  const supportsSpeech = isSpeechSupported();
 
   useEffect(() => () => window.speechSynthesis?.cancel(), []);
 
@@ -34,14 +32,11 @@ export default function ExploreView({
     event.preventDefault();
     if (!supportsSpeech) return;
 
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(word.parola);
-    utterance.lang = 'en-US';
-    utterance.rate = 0.9;
-    utterance.onstart = () => setSpeakingWordId(word._id);
-    utterance.onend = () => setSpeakingWordId(null);
-    utterance.onerror = () => setSpeakingWordId(null);
-    window.speechSynthesis.speak(utterance);
+    speakText(word.parola, word.lingua || 'en', {
+      onStart: () => setSpeakingWordId(word._id),
+      onEnd: () => setSpeakingWordId(null),
+      onError: () => setSpeakingWordId(null),
+    });
   };
 
   const toggleLevelFilter = (lvl) => {

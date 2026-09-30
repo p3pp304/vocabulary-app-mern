@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { fetchWordDetail } from "../services/wordService";
 import { updateDeckWord, addWordToDeck, removeWordFromDeck } from "../services/deckService";
+import { isSpeechSupported, speakText } from "../services/speechService";
 
 export default function WordDetail() {
   const { id } = useParams();
@@ -20,10 +21,7 @@ export default function WordDetail() {
 
   // Stato audio sintesi vocale
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
-  const supportsSpeech =
-    typeof window !== "undefined" &&
-    "speechSynthesis" in window &&
-    "SpeechSynthesisUtterance" in window;
+  const supportsSpeech = isSpeechSupported();
 
   useEffect(() => {
     let isMounted = true;
@@ -65,16 +63,11 @@ export default function WordDetail() {
   const handleSpeak = () => {
     if (!supportsSpeech || !wordData?.parola) return;
 
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(wordData.parola);
-    utterance.lang = wordData.lingua || "en-US";
-    utterance.rate = 0.9;
-
-    utterance.onstart = () => setIsPlayingAudio(true);
-    utterance.onend = () => setIsPlayingAudio(false);
-    utterance.onerror = () => setIsPlayingAudio(false);
-
-    window.speechSynthesis.speak(utterance);
+    speakText(wordData.parola, wordData.lingua || "en", {
+      onStart: () => setIsPlayingAudio(true),
+      onEnd: () => setIsPlayingAudio(false),
+      onError: () => setIsPlayingAudio(false),
+    });
   };
 
   // Toggle Aggiungi / Rimuovi dal mazzo SEMPRE PRESENTE

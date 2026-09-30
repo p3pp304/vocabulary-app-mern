@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { CEFR_LEVELS, THEMES } from "../vocabularyData";
+import { isSpeechSupported, speakText } from "../services/speechService";
 
 export default function MyDeck({
   selectedLang,
@@ -15,10 +16,7 @@ export default function MyDeck({
   const [selectedLevel, setSelectedLevel] = useState([]);
   const [selectedTheme, setSelectedTheme] = useState([]);
 
-  const supportsSpeech =
-    typeof window !== "undefined" &&
-    "speechSynthesis" in window &&
-    "SpeechSynthesisUtterance" in window;
+  const supportsSpeech = isSpeechSupported();
 
   useEffect(() => () => window.speechSynthesis?.cancel(), []);
 
@@ -35,16 +33,11 @@ export default function MyDeck({
     event.preventDefault();
     if (!supportsSpeech) return;
 
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(word.parola);
-    
-    // Assegna la lingua corretta del vocabolo anziché forzare sempre l'inglese
-    utterance.lang = word.lingua || selectedLang || "en-UK";
-    utterance.rate = 0.9;
-    utterance.onstart = () => setSpeakingWordId(targetId);
-    utterance.onend = () => setSpeakingWordId(null);
-    utterance.onerror = () => setSpeakingWordId(null);
-    window.speechSynthesis.speak(utterance);
+    speakText(word.parola, word.lingua || selectedLang || "en", {
+      onStart: () => setSpeakingWordId(targetId),
+      onEnd: () => setSpeakingWordId(null),
+      onError: () => setSpeakingWordId(null),
+    });
   };
 
   const toggleLevelFilter = (lvl) => {

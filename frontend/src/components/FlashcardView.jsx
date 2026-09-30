@@ -4,6 +4,7 @@ import {
   saveFlashcardSessionScore,
   submitFlashcardReview,
 } from "../services/flashcardService";
+import { isSpeechSupported, speakText } from "../services/speechService";
 
 export default function FlashcardView({ selectedLang }) {
   const [cards, setCards] = useState([]);
@@ -17,10 +18,7 @@ export default function FlashcardView({ selectedLang }) {
   const [sessionScore, setSessionScore] = useState(null);
   const [scoreSaveError, setScoreSaveError] = useState(null);
 
-  const supportsSpeech =
-    typeof window !== "undefined" &&
-    "speechSynthesis" in window &&
-    "SpeechSynthesisUtterance" in window;
+  const supportsSpeech = isSpeechSupported();
 
   const loadCards = async () => {
     setLoading(true);
@@ -52,11 +50,7 @@ export default function FlashcardView({ selectedLang }) {
     e.stopPropagation();
     if (!supportsSpeech || !currentCard?.parola) return;
 
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(currentCard.parola);
-    utterance.lang = currentCard.lingua || selectedLang || "en-US";
-    utterance.rate = 0.9;
-    window.speechSynthesis.speak(utterance);
+    speakText(currentCard.parola, currentCard.lingua || selectedLang || "en");
   };
 
   const handleReview = async (remembered) => {
