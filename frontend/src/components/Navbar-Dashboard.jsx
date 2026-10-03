@@ -15,15 +15,10 @@ export default function NavbarDashboard({
   const currentLangObj = LANGUAGES.find((l) => l.id === selectedLang);
 
   return (
-    <header className="flex flex-col gap-3 border-b border-zinc-800/80 pb-4 sm:gap-2 sm:pb-4 w-full">
-      {/* Titolo centrato */}
-      <div className="text-sm sm:text-base font-mono text-center uppercase tracking-widest text-cyan-400">
-        Dashboard di Studio
-      </div>
-
+    <header className="flex flex-col border-b border-zinc-800/80 pb-4 w-full">
       <div className="flex flex-col gap-3 sm:flex-row sm:justify-between w-full sm:items-center">
         {/* Tab di navigazione */}
-        <div className="grid w-full grid-cols-3 items-stretch gap-1 sm:flex sm:w-auto sm:items-center sm:gap-10 sm:mt-2">
+          <div className="grid w-full grid-cols-3 items-stretch gap-1 sm:flex sm:w-auto sm:items-center sm:gap-10">
           <button
             type="button"
             onClick={() => setActiveTab("explore")}

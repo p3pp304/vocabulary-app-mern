@@ -137,8 +137,8 @@ export default function Dashboard({ currentTab = "explore" }) {
   };
 
   return (
-    <div className="p-6 lg:p-10 flex flex-col items-center w-full">
-      <div className="w-full max-w-6xl flex flex-col gap-8">
+    <div className="p-6 lg:px-10 lg:pt-4 lg:pb-10 flex flex-col items-center w-full">
+      <div className="w-full max-w-6xl flex flex-col gap-4 sm:gap-8">
         <NavbarDashboard
           selectedLang={selectedLang}
           setSelectedLang={handleLangChange}
