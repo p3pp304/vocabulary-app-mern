@@ -28,7 +28,8 @@ export default function NavbarDashboard({
                 : "border-transparent text-zinc-500 hover:text-zinc-300"
             }`}
           >
-            Esplora Catalogo
+            <span className="sm:hidden whitespace-nowrap">Esplora</span>
+            <span className="hidden sm:inline">Esplora Catalogo</span>
           </button>
 
           <button
@@ -40,7 +41,8 @@ export default function NavbarDashboard({
                 : "border-transparent text-zinc-500 hover:text-zinc-300"
             }`}
           >
-            <span>Il tuo Mazzo</span>
+            <span className="sm:hidden whitespace-nowrap">Mazzo</span>
+            <span className="hidden sm:inline">Il tuo Mazzo</span>
             <span className="px-1 py-0.1 rounded-full text-xs sm:text-sm font-mono bg-zinc-800 text-cyan-400 border border-zinc-700">
               {deckCount}
             </span>
