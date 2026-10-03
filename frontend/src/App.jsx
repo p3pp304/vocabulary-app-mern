@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import HeroSection from './components/HeroSection';
 import LoginView from './components/LoginView';
@@ -15,6 +15,21 @@ function ProtectedRoute({ children }) {
     return <Navigate to="/login" replace />;
   }
   return children;
+}
+
+function AppFooter() {
+  const { pathname } = useLocation();
+  const isDashboardRoute = ['/dashboard', '/deck', '/flashcards'].includes(pathname);
+
+  return (
+    <footer className={`${isDashboardRoute ? 'hidden md:block' : ''} w-full border-t border-zinc-800/80 px-4 py-5 text-center text-xs text-zinc-500`}>
+      <p className="flex flex-col items-center gap-1 sm:flex-row sm:justify-center sm:gap-0">
+        <span>&copy; {new Date().getFullYear()} Vocably. Tutti i diritti riservati.</span>
+        <span className="hidden sm:inline sm:mx-2 text-zinc-700">|</span>
+        <span>Created by <span className="text-zinc-300">Giuseppe Fuzio</span></span>
+      </p>
+    </footer>
+  );
 }
 
 export default function App() {
@@ -93,13 +108,7 @@ export default function App() {
           </Routes>
         </main>
 
-        <footer className="w-full border-t border-zinc-800/80 px-4 py-5 text-center text-xs text-zinc-500">
-          <p className="flex flex-col items-center gap-1 sm:flex-row sm:justify-center sm:gap-0">
-            <span>&copy; {new Date().getFullYear()} Vocably. Tutti i diritti riservati.</span>
-            <span className="hidden sm:inline sm:mx-2 text-zinc-700">|</span>
-            <span>Created by <span className="text-zinc-300">Giuseppe Fuzio</span></span>
-          </p>
-        </footer>
+        <AppFooter />
       </div>
     </BrowserRouter>
   );

@@ -15,10 +15,11 @@ export default function NavbarDashboard({
   const currentLangObj = LANGUAGES.find((l) => l.id === selectedLang);
 
   return (
+    <>
     <header className="flex flex-col border-b border-zinc-800/80 pb-4 w-full">
       <div className="flex flex-col gap-3 sm:flex-row sm:justify-between w-full sm:items-center">
         {/* Tab di navigazione */}
-          <div className="grid w-full grid-cols-3 items-stretch gap-1 sm:flex sm:w-auto sm:items-center sm:gap-10">
+          <div className="hidden md:flex md:w-auto md:items-center md:gap-10">
           <button
             type="button"
             onClick={() => setActiveTab("explore")}
@@ -139,5 +140,60 @@ export default function NavbarDashboard({
         </div>
       </div>
     </header>
+    <nav
+      aria-label="Navigazione dashboard"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-zinc-800 bg-zinc-950/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_24px_rgba(0,0,0,0.35)] backdrop-blur md:hidden"
+    >
+      <div className="mx-auto grid max-w-lg grid-cols-3">
+        <button
+          type="button"
+          aria-current={activeTab === "explore" ? "page" : undefined}
+          onClick={() => setActiveTab("explore")}
+          className={`flex min-h-16 flex-col items-center justify-center gap-1 border-t-2 text-[11px] font-medium transition-colors ${
+            activeTab === "explore" ? "border-cyan-400 text-cyan-300" : "border-transparent text-zinc-400"
+          }`}
+        >
+          <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="10.8" cy="10.8" r="6.8" />
+            <path d="m16 16 4 4" />
+          </svg>
+          <span>Esplora</span>
+        </button>
+        <button
+          type="button"
+          aria-label={`Mazzo, ${deckCount} parole`}
+          aria-current={activeTab === "deck" ? "page" : undefined}
+          onClick={() => setActiveTab("deck")}
+          className={`flex min-h-16 flex-col items-center justify-center gap-1 border-t-2 text-[11px] font-medium transition-colors ${
+            activeTab === "deck" ? "border-cyan-400 text-cyan-300" : "border-transparent text-zinc-400"
+          }`}
+        >
+          <span className="relative">
+            <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6.5 4.5h11a2 2 0 0 1 2 2v13L12 16l-7.5 3.5v-13a2 2 0 0 1 2-2Z" />
+            </svg>
+            <span className="absolute -right-3 -top-2 inline-flex h-4 min-w-4 items-center justify-center rounded-full border border-zinc-700 bg-zinc-800 px-1 text-[9px] text-cyan-300">
+              {deckCount}
+            </span>
+          </span>
+          <span>Il Tuo Mazzo</span>
+        </button>
+        <button
+          type="button"
+          aria-current={activeTab === "flashcards" ? "page" : undefined}
+          onClick={() => setActiveTab("flashcards")}
+          className={`flex min-h-16 flex-col items-center justify-center gap-1 border-t-2 text-[11px] font-medium transition-colors ${
+            activeTab === "flashcards" ? "border-cyan-400 text-cyan-300" : "border-transparent text-zinc-400"
+          }`}
+        >
+          <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="5" y="5" width="14" height="15" rx="2" />
+            <path d="M8 9h8M8 13h5M8 2h10a2 2 0 0 1 2 2v13" />
+          </svg>
+          <span>Flashcard</span>
+        </button>
+      </div>
+    </nav>
+    </>
   );
 }
