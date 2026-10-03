@@ -139,7 +139,7 @@ export default function Dashboard({ currentTab = "explore" }) {
           setSearchQuery={setSearchQuery}
         />
 
-        {selectedLang !== "en" ? (
+        {selectedLang !== "en" || "es" ? (
           <div className="flex min-h-[40vh] w-full items-center justify-center">
             <h1 className="text-center font-mono text-xl font-semibold uppercase tracking-widest text-zinc-300">
               SEZIONE IN ARRIVO
