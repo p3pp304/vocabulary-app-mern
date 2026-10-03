@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { CEFR_LEVELS, THEMES } from "../vocabularyData";
 import { isSpeechSupported, speakText } from "../services/speechService";
 
+const ITEMS_PER_PAGE = 12;
+
 export default function MyDeck({
   selectedLang,
   deckItems = [],
@@ -15,10 +17,12 @@ export default function MyDeck({
 
   const [selectedLevel, setSelectedLevel] = useState([]);
   const [selectedTheme, setSelectedTheme] = useState([]);
+  const [page, setPage] = useState(1);
 
   const supportsSpeech = isSpeechSupported();
 
   useEffect(() => () => window.speechSynthesis?.cancel(), []);
+  useEffect(() => setPage(1), [selectedLang, searchQuery]);
 
   // La Dashboard aggiorna la lista condivisa dopo la rimozione.
   const handleRemoveWord = async (e, targetDeckItemId) => {
@@ -41,12 +45,14 @@ export default function MyDeck({
   };
 
   const toggleLevelFilter = (lvl) => {
+    setPage(1);
     setSelectedLevel((prev) =>
       prev.includes(lvl) ? prev.filter((item) => item !== lvl) : [...prev, lvl]
     );
   };
 
   const toggleThemeFilter = (themeId) => {
+    setPage(1);
     setSelectedTheme((prev) =>
       prev.includes(themeId) ? prev.filter((item) => item !== themeId) : [...prev, themeId]
     );
@@ -69,6 +75,17 @@ export default function MyDeck({
     return matchLanguage && matchLevel && matchTheme && matchQuery;
   });
 
+  const totalPages = Math.max(1, Math.ceil(filteredWords.length / ITEMS_PER_PAGE));
+  const currentPage = Math.min(page, totalPages);
+  const visibleWords = filteredWords.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  useEffect(() => {
+    setPage((previousPage) => Math.min(previousPage, totalPages));
+  }, [totalPages]);
+
   return (
     <div className="flex flex-col md:gap-8 gap-4 w-full">
       {/* Filtri */}
@@ -82,7 +99,10 @@ export default function MyDeck({
             {selectedLevel.length > 0 && (
               <button
                 type="button"
-                onClick={() => setSelectedLevel([])}
+                onClick={() => {
+                  setSelectedLevel([]);
+                  setPage(1);
+                }}
                 className="text-[10px] font-mono text-cyan-400 hover:underline cursor-pointer"
               >
                 Azzera
@@ -116,7 +136,10 @@ export default function MyDeck({
             {selectedTheme.length > 0 && (
               <button
                 type="button"
-                onClick={() => setSelectedTheme([])}
+                onClick={() => {
+                  setSelectedTheme([]);
+                  setPage(1);
+                }}
                 className="text-[10px] font-mono text-cyan-400 hover:underline cursor-pointer"
               >
                 Azzera
@@ -164,7 +187,7 @@ export default function MyDeck({
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredWords.map((word) => {
+            {visibleWords.map((word) => {
               const targetId = String(word.deckItemId);
 
               return (
@@ -244,6 +267,30 @@ export default function MyDeck({
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {!isLoading && totalPages > 1 && (
+          <div className="flex items-center justify-between border-t border-zinc-800/80 pt-4">
+            <button
+              type="button"
+              onClick={() => setPage((previousPage) => Math.max(previousPage - 1, 1))}
+              disabled={currentPage === 1}
+              className="rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-2 text-xs font-semibold text-zinc-300 transition hover:border-zinc-700 disabled:opacity-40"
+            >
+              Precedente
+            </button>
+            <span className="font-mono text-xs text-zinc-400">
+              Pagina {currentPage} di {totalPages}
+            </span>
+            <button
+              type="button"
+              onClick={() => setPage((previousPage) => Math.min(previousPage + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-2 text-xs font-semibold text-zinc-300 transition hover:border-zinc-700 disabled:opacity-40"
+            >
+              Successiva
+            </button>
           </div>
         )}
       </div>
