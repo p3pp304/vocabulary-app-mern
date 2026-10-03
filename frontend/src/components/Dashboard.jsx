@@ -14,7 +14,14 @@ import {
 } from "../services/deckService";
 
 export default function Dashboard({ currentTab = "explore" }) {
-  const [selectedLang, setSelectedLang] = useState("en");
+  const getSavedLang = () => {
+    if (typeof window === "undefined") return "en";
+
+    const saved = window.localStorage.getItem("selectedLang");
+    return saved && LANGUAGES.some((lang) => lang.id === saved) ? saved : "en";
+  };
+
+  const [selectedLang, setSelectedLang] = useState(() => getSavedLang());
   // Memorizziamo gli elementi del mazzo con la loro struttura completa
   const [userDeck, setUserDeck] = useState([]);
   const [isDeckLoading, setIsDeckLoading] = useState(true);
@@ -58,6 +65,12 @@ export default function Dashboard({ currentTab = "explore" }) {
       navigate("/flashcards");
     }
   };
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("selectedLang", selectedLang);
+    }
+  }, [selectedLang]);
 
   const handleLangChange = (newLang) => {
     setSelectedLang(newLang);
