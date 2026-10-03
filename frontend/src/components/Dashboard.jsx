@@ -24,10 +24,10 @@ export default function Dashboard({ currentTab = "explore" }) {
   const navigate = useNavigate();
 
   // Caricamento mazzo tramite la funzione di servizio
-  const fetchUserDeck = async () => {
+  const fetchUserDeck = async (lang = selectedLang) => {
     setDeckError(null);
     try {
-      const data = await getMyDeck();
+      const data = await getMyDeck(lang);
       setUserDeck(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Impossibile recuperare il mazzo:", err);
@@ -38,8 +38,8 @@ export default function Dashboard({ currentTab = "explore" }) {
   };
 
   useEffect(() => {
-    fetchUserDeck();
-  }, []);
+    fetchUserDeck(selectedLang);
+  }, [selectedLang]);
 
   // Lista di ID usata da ExploreView per sapere se la card ha l'icona "salvata"
   const savedWordIds = userDeck.map((item) => {
@@ -100,7 +100,7 @@ export default function Dashboard({ currentTab = "explore" }) {
       try {
         await addWordToDeck(strId);
         // Ricarichiamo il mazzo per ottenere il nuovo deckItemId generato da Mongo
-        await fetchUserDeck();
+        await fetchUserDeck(selectedLang);
       } catch (err) {
         console.error("Errore aggiunta:", err);
         alert(err.message || "Operazione non riuscita");
@@ -111,7 +111,7 @@ export default function Dashboard({ currentTab = "explore" }) {
   const handleAddWord = async (newWordData) => {
     try {
       await createCustomDeckWord(newWordData);
-      await fetchUserDeck();
+      await fetchUserDeck(selectedLang);
 
       if (newWordData.lingua && newWordData.lingua !== selectedLang) {
         setSelectedLang(newWordData.lingua);
