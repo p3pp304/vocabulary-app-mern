@@ -22,7 +22,7 @@ export default function NavbarDashboard({
           <button
             type="button"
             onClick={() => setActiveTab("explore")}
-            className={`flex min-h-12 items-center justify-center px-1 text-sm sm:min-h-0 sm:justify-start sm:px-0 sm:text-base font-semibold pb-1.5 border-b-2 transition-all cursor-pointer ${
+            className={`flex sm:min-h-12 items-center justify-center px-1 text-sm sm:min-h-0 sm:justify-start sm:px-0 sm:text-base font-semibold pb-1.5 border-b-2 transition-all cursor-pointer ${
               activeTab === "explore"
                 ? "border-cyan-400 text-white"
                 : "border-transparent text-zinc-500 hover:text-zinc-300"
@@ -35,7 +35,7 @@ export default function NavbarDashboard({
           <button
             type="button"
             onClick={() => setActiveTab("deck")}
-            className={`flex min-h-12 items-center justify-center gap-1 px-1 text-sm sm:min-h-0 sm:justify-start sm:px-0 sm:text-base font-semibold pb-1.5 border-b-2 transition-all cursor-pointer ${
+            className={`flex sm:min-h-12 min-h-8 items-center justify-center gap-1 px-1 text-sm sm:min-h-0 sm:justify-start sm:px-0 sm:text-base font-semibold pb-1.5 border-b-2 transition-all cursor-pointer ${
               activeTab === "deck"
                 ? "border-cyan-400 text-white"
                 : "border-transparent text-zinc-500 hover:text-zinc-300"
@@ -51,7 +51,7 @@ export default function NavbarDashboard({
           <button
             type="button"
             onClick={() => setActiveTab("flashcards")}
-            className={`flex min-h-12 items-center justify-center px-1 text-sm sm:min-h-0 sm:justify-start sm:px-0 sm:text-base font-semibold pb-1.5 border-b-2 transition-all cursor-pointer ${
+            className={`flex items-center justify-center px-1 text-sm sm:min-h-0 sm:justify-start sm:px-0 sm:text-base font-semibold pb-1.5 border-b-2 transition-all cursor-pointer ${
               activeTab === "flashcards"
                 ? "border-cyan-400 text-white"
                 : "border-transparent text-zinc-500 hover:text-zinc-300"

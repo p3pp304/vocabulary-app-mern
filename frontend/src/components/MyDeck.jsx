@@ -70,7 +70,7 @@ export default function MyDeck({
   });
 
   return (
-    <div className="flex flex-col gap-8 w-full">
+    <div className="flex flex-col md:gap-8 gap-4 w-full">
       {/* Filtri */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-zinc-900/40 border border-zinc-800/80 p-5 rounded-2xl backdrop-blur-sm">
         {/* Livelli */}
@@ -143,7 +143,7 @@ export default function MyDeck({
       </div>
 
       {/* Lista Vocaboli */}
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col md:gap-4 gap-2">
         <h2 className="text-lg font-semibold text-zinc-100">
           Vocaboli nel tuo mazzo ({filteredWords.length})
         </h2>
