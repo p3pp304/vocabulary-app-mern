@@ -92,6 +92,14 @@ export default function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
+
+        <footer className="w-full border-t border-zinc-800/80 px-4 py-5 text-center text-xs text-zinc-500">
+          <p>
+            &copy; {new Date().getFullYear()} Vocably. Tutti i diritti riservati.
+            <span className="mx-2 text-zinc-700">|</span>
+            Created by <span className="text-zinc-300">Giuseppe Fuzio</span>
+          </p>
+        </footer>
       </div>
     </BrowserRouter>
   );
