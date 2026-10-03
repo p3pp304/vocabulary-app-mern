@@ -189,7 +189,7 @@ export default function Dashboard({ currentTab = "explore" }) {
         )}
 
         {(currentTab === "explore" || currentTab === "deck") && (
-          <footer className="mt-8 border-t border-zinc-800/80 py-4 text-center text-[11px] text-zinc-500 md:hidden">
+          <footer className="mt-1 border-t border-zinc-800/80 py-4 text-center text-[11px] text-zinc-500 md:hidden">
             <p className="flex flex-col gap-1">
               <span>&copy; {new Date().getFullYear()} Vocably. Tutti i diritti riservati.</span>
               <span>Created by <span className="text-zinc-300">Giuseppe Fuzio</span></span>
